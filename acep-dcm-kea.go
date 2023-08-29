@@ -7,8 +7,14 @@
 
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"rsc.io/quote"
+)
 
 func main() {
 	fmt.Println(">> Client-server architecture.")
+
+	fmt.Println(quote.Go())
 }
