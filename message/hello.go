@@ -13,7 +13,7 @@ func main() {
 
 
 	// Request Message
-	message, err := example.Hello("")
+	message, err := example.Hello("Solomon")
 	if err != nil {
 		log.Fatal(err)
 	}
