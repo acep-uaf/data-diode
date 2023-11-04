@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"example.com/example"
 )
 
@@ -11,12 +12,14 @@ func main() {
 	log.SetPrefix("greetings: ")
 	log.SetFlags(0)
 
+	// Name Slice
+	names := []string{"A", "B", "C"}
 
-	// Request Message
-	message, err := example.Hello("Solomon")
+	// Request Message(s)
+	messages, err := example.Communications(names)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(message)
+	fmt.Println(messages)
 }
