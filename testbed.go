@@ -118,7 +118,7 @@ func main() {
 	diodeInputSideIP := "192.168.1.99"
 	diodeTcpPassthroughPort := 50000
 
-	targetTcpServerIP := "192.167.1.20"
+	targetTcpServerIP := "192.168.1.20"
 	targetTcpServerPort := 503
 
 	app := &cli.App{
