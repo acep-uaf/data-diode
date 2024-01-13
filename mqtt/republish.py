@@ -2,25 +2,21 @@
 
 import socket
 import paho.mqtt.client as mqtt
+import json
+from datetime import datetime
 
 # Configuration Settings
 
 targetTcpServerIP = "192.168.1.20"
 targetTcpServerPort = 503
+
 mqttBrokerIP = "test.mosquitto.org"
 mqttBrokerPort = 1883
 mqttTopic = "test/message"
 
-# TCP Socket
-
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((targetTcpServerIP, targetTcpServerPort))
-
-# Begin Listening
-
 server.listen(1)
-
-# MQTT Client
 
 mqtt_client = mqtt.Client()
 mqtt_client.connect(mqttBrokerIP, mqttBrokerPort)
@@ -34,12 +30,20 @@ while True:
 
         while True:
             data = connection.recv(10240)
-            print(f">> Received data: {data.decode()}")
-
             if not data:
                 break
 
-            mqtt_client.publish(mqttTopic, data.decode())
+            # print(f">> Received data: {data.decode()}")
+
+            message = {
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "topic": mqttTopic,
+                "data": data.decode()
+            }
+
+            json_message = json.dumps(message)
+
+            mqtt_client.publish(mqttTopic, json_message)
 
     finally:
         connection.close()
