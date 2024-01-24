@@ -225,6 +225,7 @@ func main() {
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
 					sampleMetrics()
+					example()
 					return nil
 				},
 			},
@@ -243,7 +244,7 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version 0.0.3")
+					fmt.Println(">> diode version 0.0.4")
 					return nil
 				},
 			},
