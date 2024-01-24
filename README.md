@@ -1,4 +1,5 @@
 # Data Diode
+
 Scripts for verifying TCP passthrough functionality.
 
 ## Development Instructions
@@ -12,8 +13,59 @@ Scripts for verifying TCP passthrough functionality.
 - Build binary: `make`
 - CLI: `./diode [options...]`
 
-## Architecture Diagram
+#### Architecture Diagram
+
+###### Energy Testbed
+
+###### Device Configuration
+
+#### Directory Structure
+
+```zsh
+.
+├── data
+├── go.mod
+├── go.sum
+├── Makefile
+├── mqtt
+├── Pipfile
+├── Pipfile.lock
+├── README.md
+├── sample
+├── testbed.go
+├── testbed_test.go
+└── utility.go
+
+3 directories, 9 files
+```
 
 ## User Stories
 
+#### Scenario Planning
+
+1. Power Plant Operator
+1. Information Security Auditor
+1. Energy Awareness Application Developer
+1. Community Member
+
+#### Threat Model
+
+- [ ] Tactics
+- [ ] Techniques
+- [ ] Procedures
+
 ## System Benchmarking
+
+#### Risk Matrix ([5x5](https://safetyculture.com/topics/risk-assessment/5x5-risk-matrix/))
+
+| ↔ Probability <br> Impact ↕ | **Insignificant** | **Minor** | **Significant** | **Major** | **Severe** |
+| --------------------------- | ----------------- | --------- | --------------- | --------- | ---------- |
+| **Almost Certain**          | R01               | R02       | R03             | R04       | R05        |
+| **Likely**                  | R06               | R07       | R08             | R09       | R10        |
+| **Moderate**                | R11               | R12       | R13             | R14       | R15        |
+| **Unlikely**                | R16               | R17       | R18             | R19       | R20        |
+| **Rare**                    | R21               | R22       | R23             | R24       | R25        |
+
+#### Experimental Design
+
+- [data/logbook.ipynb](data/logbook.ipynb)
