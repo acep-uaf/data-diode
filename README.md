@@ -48,7 +48,7 @@ Scripts for verifying TCP passthrough functionality.
 1. Energy Awareness Application Developer
 1. Community Member
 
-#### Threat Model
+#### Threat Model[^1]
 
 - [ ] Tactics
 - [ ] Techniques
@@ -69,3 +69,5 @@ Scripts for verifying TCP passthrough functionality.
 #### Experimental Design
 
 - [data/logbook.ipynb](data/logbook.ipynb)
+
+[^1]: https://csrc.nist.gov/glossary/term/tactics_techniques_and_procedures
