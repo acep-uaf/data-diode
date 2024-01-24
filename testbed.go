@@ -14,6 +14,7 @@ import (
 	"os"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/urfave/cli/v2"
 	"rsc.io/quote"
 )
@@ -111,6 +112,61 @@ func sampleMetrics() {
 	fmt.Println(">> UTC time: ", time.Now().UTC())
 }
 
+func demo() {
+	mqttBrokerIP := "test.mosquitto.org"
+	mqttBrokerPort := 1883
+	mqttBrokerMessage := "Hello, world."
+	mqttBrokerTopic := "test/message"
+
+	fmt.Println(">> MQTT")
+	fmt.Println(">> Broker: ", mqttBrokerIP)
+	fmt.Println(">> Port: ", mqttBrokerPort)
+
+	// Source: https://github.com/eclipse/paho.mqtt.golang/blob/master/cmd/simple/main.go
+	var example mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+		fmt.Printf(">> Topic: %s\n", msg.Topic())
+		fmt.Printf(">> Message: %s\n", msg.Payload())
+	}
+
+	mqtt.DEBUG = log.New(os.Stdout, "", 0)
+	mqtt.ERROR = log.New(os.Stdout, "", 0)
+
+	// Initial Connection
+	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", mqttBrokerIP, mqttBrokerPort))
+	opts.SetKeepAlive(2 * time.Second)
+	opts.SetDefaultPublishHandler(example)
+	opts.SetPingTimeout(1 * time.Second)
+
+	// Create and start a client using the above ClientOptions
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+
+	// Subscribe to a topic
+	if token := client.Subscribe(mqttBrokerTopic, 0, nil); token.Wait() && token.Error() != nil {
+		fmt.Println(token.Error())
+		os.Exit(1)
+	}
+
+	// Publish to a topic
+	token := client.Publish(mqttBrokerTopic, 0, false, mqttBrokerMessage)
+	token.Wait()
+
+	time.Sleep(6 * time.Second)
+
+	// Disconnect from the broker
+	if token := client.Unsubscribe(mqttBrokerTopic); token.Wait() && token.Error() != nil {
+		fmt.Println(token.Error())
+		os.Exit(1)
+	}
+
+	client.Disconnect(250)
+
+	time.Sleep(1 * time.Second)
+
+}
+
 func main() {
 
 	// Configuration Options
@@ -173,11 +229,21 @@ func main() {
 				},
 			},
 			{
+				Name:    "mqtt",
+				Aliases: []string{"m"},
+				Usage:   "MQTT (republisher) demo",
+				Action: func(mCtx *cli.Context) error {
+					fmt.Println("----- MQTT -----")
+					demo()
+					return nil
+				},
+			},
+			{
 				Name:    "version",
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version 0.0.2")
+					fmt.Println(">> diode version 0.0.3")
 					return nil
 				},
 			},
