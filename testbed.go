@@ -123,7 +123,6 @@ func demo() {
 	fmt.Println(">> Port: ", mqttBrokerPort)
 
 	// Source: https://github.com/eclipse/paho.mqtt.golang/blob/master/cmd/simple/main.go
-
 	var example mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		fmt.Printf(">> Topic: %s\n", msg.Topic())
 		fmt.Printf(">> Message: %s\n", msg.Payload())
@@ -133,7 +132,6 @@ func demo() {
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
 
 	// Initial Connection
-
 	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", mqttBrokerIP, mqttBrokerPort))
 	opts.SetKeepAlive(2 * time.Second)
 	opts.SetDefaultPublishHandler(example)
@@ -158,7 +156,6 @@ func demo() {
 	time.Sleep(6 * time.Second)
 
 	// Disconnect from the broker
-
 	if token := client.Unsubscribe(mqttBrokerTopic); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
@@ -234,28 +231,10 @@ func main() {
 			{
 				Name:    "mqtt",
 				Aliases: []string{"m"},
-				Usage:   "MQTT (Republisher) Demo",
+				Usage:   "MQTT (republisher) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
 					demo()
-					return nil
-				},
-			},
-			{
-				Name:    "pub",
-				Aliases: []string{"p"},
-				Usage:   "Publish a message to the MQTT broker",
-				Action: func(pCtx *cli.Context) error {
-					fmt.Println(">> Publish")
-					return nil
-				},
-			},
-			{
-				Name:    "sub",
-				Aliases: []string{"s"},
-				Usage:   "Subscribe to a topic on the MQTT broker",
-				Action: func(sCtx *cli.Context) error {
-					fmt.Println(">> Subscribe")
 					return nil
 				},
 			},
