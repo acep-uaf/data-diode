@@ -15,6 +15,7 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/guptarohit/asciigraph"
 	"github.com/urfave/cli/v2"
 	"rsc.io/quote"
 )
@@ -110,6 +111,11 @@ func communicationHandler(connection net.Conn) {
 func sampleMetrics() {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
+
+	definition := []float64{0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144}
+	graph := asciigraph.Plot(definition)
+
+	fmt.Println(graph)
 }
 
 func demo() {
@@ -179,7 +185,7 @@ func main() {
 
 	app := &cli.App{
 		Name:  "diode",
-		Usage: "A command line tool for interacting with data diodes.",
+		Usage: "Tool for interacting with data diode(s) via command-line interface (CLI).",
 		Action: func(cCtx *cli.Context) error {
 			fmt.Println(quote.Go())
 			return nil

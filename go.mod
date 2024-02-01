@@ -4,6 +4,7 @@ go 1.21.6
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
+	github.com/guptarohit/asciigraph v0.5.6
 	github.com/urfave/cli/v2 v2.27.1
 	rsc.io/quote v1.5.2
 )
