@@ -17,8 +17,27 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/guptarohit/asciigraph"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v2"
 	"rsc.io/quote"
 )
+
+type Configuration struct {
+	Zip int64 `yaml:"location"`
+}
+
+func (init *Configuration) getConfig() *Configuration {
+	yamlFile, err := os.ReadFile("config.yaml")
+	if err != nil {
+		fmt.Println(">> Error reading YAML file: ", err.Error())
+	}
+
+	err = yaml.Unmarshal(yamlFile, init)
+	if err != nil {
+		fmt.Println(">> Error parsing YAML file: ", err.Error())
+	}
+
+	return init
+}
 
 func newClient(diodeInputSideIP string, diodeTcpPassthroughPort int) {
 	// Create a socket
@@ -174,9 +193,6 @@ func demo() {
 }
 
 func main() {
-
-	// Configuration Options
-
 	diodeInputSideIP := "192.168.1.99"
 	diodeTcpPassthroughPort := 50000
 
@@ -217,10 +233,10 @@ func main() {
 				Usage:   "Debug diagnostics via configuration settings",
 				Action: func(dCtx *cli.Context) error {
 					fmt.Println("----- DIAGNOSTICS -----")
-					input := fmt.Sprintf("%s:%d", diodeInputSideIP, diodeTcpPassthroughPort)
-					output := fmt.Sprintf("%s:%d", targetTcpServerIP, targetTcpServerPort)
-					fmt.Println(">> Client: ", input)
-					fmt.Println(">> Server: ", output)
+					// fmt.Println(quote.Hello())
+					var init Configuration
+					init.getConfig()
+					fmt.Println(init)
 					return nil
 				},
 			},

@@ -1,0 +1,17 @@
+location: 99775
+diode:
+  mode: passthrough
+  topology:
+    - tcp:
+      input:
+        ip: "192.168.1.99"
+        port: 50000
+      output:
+        ip: "192.168.1.20"
+        port: 503
+    - mqtt:
+      broker:
+        ip: "test.mosquitto.org"
+        port: 1883
+        message: "Hello, world."
+        topic: "test/message"
