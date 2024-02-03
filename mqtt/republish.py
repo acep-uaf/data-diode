@@ -38,16 +38,15 @@ if __name__ == "__main__":
     print("🚀 Data Diode TCP Stream Republisher")
 
     with open("config.yaml", "r") as file:
-        config = yaml.safe_load(file)
+        diode = yaml.safe_load(file)
 
     # Configuration Settings
 
-    targetTCPServerIP = config["diode"]["topology"][0]["output"]["ip"]
-    targetTCPServerPort = config["diode"]["topology"][0]["output"]["port"]
-
-    mqttBrokerIP = config["diode"]["topology"][2]["broker"]["ip"]
-    mqttBrokerPort = config["diode"]["topology"][2]["broker"]["port"]
-    mqttTopic = config["diode"]["topology"][2]["broker"]["topic"]
+    targetTCPServerIP = diode["output"]["ip"]
+    targetTCPServerPort = diode["output"]["port"]
+    mqttBrokerIP = diode["broker"]["server"]
+    mqttBrokerPort = diode["broker"]["port"]
+    mqttTopic = diode["broker"]["topic"]
 
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

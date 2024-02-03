@@ -15,36 +15,31 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/guptarohit/asciigraph"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
-	"rsc.io/quote"
 )
 
 type Configuration struct {
-	Zip int64 `yaml:"location"`
+	Input struct {
+		IP   string
+		Port int
+	}
+	Output struct {
+		IP   string
+		Port int
+	}
+	Broker struct {
+		Server  string
+		Port    int
+		Topic   string
+		Message string
+	}
 }
 
-func (init *Configuration) getConfig() *Configuration {
-	// FIXME: Reading file outside of the `diode` binary path?
-	
-	yamlFile, err := os.ReadFile("config.yaml")
-	if err != nil {
-		fmt.Println(">> Error reading YAML file: ", err.Error())
-	}
-
-	err = yaml.Unmarshal(yamlFile, init)
-	if err != nil {
-		fmt.Println(">> Error parsing YAML file: ", err.Error())
-	}
-
-	return init
-}
-
-func newClient(diodeInputSideIP string, diodeTcpPassthroughPort int) {
+func newClient(ip string, port int) {
 	// Create a socket
 
-	client, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", diodeInputSideIP, diodeTcpPassthroughPort), time.Second)
+	client, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), time.Second)
 
 	if err != nil {
 		fmt.Println(">> Error establishing connection to the diode input side: ", err.Error())
@@ -73,10 +68,10 @@ func newClient(diodeInputSideIP string, diodeTcpPassthroughPort int) {
 	}
 }
 
-func newServer(targetTcpServerIP string, targetTcpServerPort int) {
+func newServer(ip string, port int) {
 	// Begin listening for incoming connections
 
-	server, err := net.Listen("tcp", fmt.Sprintf("%s:%d", targetTcpServerIP, targetTcpServerPort))
+	server, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
 
 	if err != nil {
 		fmt.Println(">> Error listening for incoming connections: ", err.Error())
@@ -84,7 +79,7 @@ func newServer(targetTcpServerIP string, targetTcpServerPort int) {
 	}
 	defer server.Close()
 
-	fmt.Printf(">> Server listening on %s:%d\n", targetTcpServerIP, targetTcpServerPort)
+	fmt.Printf(">> Server listening on %s:%d\n", ip, port)
 
 	for {
 		// Wait for connection
@@ -132,22 +127,12 @@ func communicationHandler(connection net.Conn) {
 func sampleMetrics() {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
-
-	definition := []float64{0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144}
-	graph := asciigraph.Plot(definition)
-
-	fmt.Println(graph)
 }
 
-func demo() {
-	mqttBrokerIP := "test.mosquitto.org"
-	mqttBrokerPort := 1883
-	mqttBrokerMessage := "Hello, world."
-	mqttBrokerTopic := "test/message"
-
+func demoRepublisher(server string, port int, topic string, message string) {
 	fmt.Println(">> MQTT")
-	fmt.Println(">> Broker: ", mqttBrokerIP)
-	fmt.Println(">> Port: ", mqttBrokerPort)
+	fmt.Println(">> Broker: ", server)
+	fmt.Println(">> Port: ", port)
 
 	// Source: https://github.com/eclipse/paho.mqtt.golang/blob/master/cmd/simple/main.go
 	var example mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -159,7 +144,7 @@ func demo() {
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
 
 	// Initial Connection
-	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", mqttBrokerIP, mqttBrokerPort))
+	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", server, port))
 	opts.SetKeepAlive(2 * time.Second)
 	opts.SetDefaultPublishHandler(example)
 	opts.SetPingTimeout(1 * time.Second)
@@ -171,19 +156,19 @@ func demo() {
 	}
 
 	// Subscribe to a topic
-	if token := client.Subscribe(mqttBrokerTopic, 0, nil); token.Wait() && token.Error() != nil {
+	if token := client.Subscribe(topic, 0, nil); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
 
 	// Publish to a topic
-	token := client.Publish(mqttBrokerTopic, 0, false, mqttBrokerMessage)
+	token := client.Publish(topic, 0, false, message)
 	token.Wait()
 
 	time.Sleep(6 * time.Second)
 
 	// Disconnect from the broker
-	if token := client.Unsubscribe(mqttBrokerTopic); token.Wait() && token.Error() != nil {
+	if token := client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
@@ -195,17 +180,35 @@ func demo() {
 }
 
 func main() {
-	diodeInputSideIP := "192.168.1.99"
-	diodeTcpPassthroughPort := 50000
+	data, err := os.ReadFile("config.yaml")
 
-	targetTcpServerIP := "192.168.1.20"
-	targetTcpServerPort := 503
+	if err != nil {
+		panic(err)
+	}
+
+	var config Configuration
+
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		panic(err)
+	}
+
+	// Configuration Settings
+
+	diodeInputSideIP := config.Input.IP
+	diodeTCPPassthroughPort := config.Input.Port
+	targetTCPServerIP := config.Output.IP
+	targetTCPServerPort := config.Output.Port
+
+	mqttBrokerIP := config.Broker.Server
+	mqttBrokerPort := config.Broker.Port
+	mqttBrokerMessage := config.Broker.Message
+	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
 		Name:  "diode",
 		Usage: "Tool for interacting with data diode(s) via command-line interface (CLI).",
 		Action: func(cCtx *cli.Context) error {
-			fmt.Println(quote.Go())
+			fmt.Println("diode: try 'diode --help' for more information")
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -215,7 +218,7 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					newClient(diodeInputSideIP, diodeTcpPassthroughPort)
+					newClient(diodeInputSideIP, diodeTCPPassthroughPort)
 					return nil
 				},
 			},
@@ -225,7 +228,7 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					newServer(targetTcpServerIP, targetTcpServerPort)
+					newServer(targetTCPServerIP, targetTCPServerPort)
 					return nil
 				},
 			},
@@ -235,10 +238,7 @@ func main() {
 				Usage:   "Debug diagnostics via configuration settings",
 				Action: func(dCtx *cli.Context) error {
 					fmt.Println("----- DIAGNOSTICS -----")
-					// fmt.Println(quote.Hello())
-					var init Configuration
-					init.getConfig()
-					fmt.Println(init)
+					fmt.Printf("%+v\n", config)
 					return nil
 				},
 			},
@@ -249,17 +249,16 @@ func main() {
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
 					sampleMetrics()
-					example()
 					return nil
 				},
 			},
 			{
 				Name:    "mqtt",
 				Aliases: []string{"m"},
-				Usage:   "MQTT (republisher) demo",
+				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					demo()
+					demoRepublisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
 					return nil
 				},
 			},
