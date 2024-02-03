@@ -23,7 +23,11 @@ Scripts for verifying TCP passthrough functionality.
 
 ```zsh
 .
+├── benchmark
+├── config.yaml
 ├── data
+├── diode.go
+├── diode_test.go
 ├── go.mod
 ├── go.sum
 ├── Makefile
@@ -31,12 +35,9 @@ Scripts for verifying TCP passthrough functionality.
 ├── Pipfile
 ├── Pipfile.lock
 ├── README.md
-├── sample
-├── testbed.go
-├── testbed_test.go
-└── utility.go
+└── sample
 
-3 directories, 9 files
+4 directories, 9 files
 ```
 
 ## User Stories
