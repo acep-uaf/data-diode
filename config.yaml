@@ -1,17 +1,27 @@
-location: 99775
+version: 0.0.4
 diode:
   mode: passthrough
+  architecture: [client, server, publish, subscribe]
   topology:
-    - tcp:
+    - TCP:
       input:
         ip: "192.168.1.99"
         port: 50000
       output:
         ip: "192.168.1.20"
         port: 503
-    - mqtt:
+    # TODO: https://yaml.org/spec/1.2.2/#3222-anchors-and-aliases
+    - UDP:
+      input:
+        ip: "192.168.1.99"
+        port: 50000
+      output:
+        ip: "192.168.1.20"
+        port: 503
+    - MQTT:
       broker:
         ip: "test.mosquitto.org"
         port: 1883
         message: "Hello, world."
         topic: "test/message"
+location: 99775

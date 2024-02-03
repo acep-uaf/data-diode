@@ -26,6 +26,8 @@ type Configuration struct {
 }
 
 func (init *Configuration) getConfig() *Configuration {
+	// FIXME: Reading file outside of the `diode` binary path?
+	
 	yamlFile, err := os.ReadFile("config.yaml")
 	if err != nil {
 		fmt.Println(">> Error reading YAML file: ", err.Error())
