@@ -16,13 +16,30 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/urfave/cli/v2"
-	"rsc.io/quote"
+	"gopkg.in/yaml.v2"
 )
 
-func newClient(diodeInputSideIP string, diodeTcpPassthroughPort int) {
+type Configuration struct {
+	Input struct {
+		IP   string
+		Port int
+	}
+	Output struct {
+		IP   string
+		Port int
+	}
+	Broker struct {
+		Server  string
+		Port    int
+		Topic   string
+		Message string
+	}
+}
+
+func newClient(ip string, port int) {
 	// Create a socket
 
-	client, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", diodeInputSideIP, diodeTcpPassthroughPort), time.Second)
+	client, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), time.Second)
 
 	if err != nil {
 		fmt.Println(">> Error establishing connection to the diode input side: ", err.Error())
@@ -51,10 +68,10 @@ func newClient(diodeInputSideIP string, diodeTcpPassthroughPort int) {
 	}
 }
 
-func newServer(targetTcpServerIP string, targetTcpServerPort int) {
+func newServer(ip string, port int) {
 	// Begin listening for incoming connections
 
-	server, err := net.Listen("tcp", fmt.Sprintf("%s:%d", targetTcpServerIP, targetTcpServerPort))
+	server, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
 
 	if err != nil {
 		fmt.Println(">> Error listening for incoming connections: ", err.Error())
@@ -62,7 +79,7 @@ func newServer(targetTcpServerIP string, targetTcpServerPort int) {
 	}
 	defer server.Close()
 
-	fmt.Printf(">> Server listening on %s:%d\n", targetTcpServerIP, targetTcpServerPort)
+	fmt.Printf(">> Server listening on %s:%d\n", ip, port)
 
 	for {
 		// Wait for connection
@@ -112,15 +129,10 @@ func sampleMetrics() {
 	fmt.Println(">> UTC time: ", time.Now().UTC())
 }
 
-func demo() {
-	mqttBrokerIP := "test.mosquitto.org"
-	mqttBrokerPort := 1883
-	mqttBrokerMessage := "Hello, world."
-	mqttBrokerTopic := "test/message"
-
+func demoRepublisher(server string, port int, topic string, message string) {
 	fmt.Println(">> MQTT")
-	fmt.Println(">> Broker: ", mqttBrokerIP)
-	fmt.Println(">> Port: ", mqttBrokerPort)
+	fmt.Println(">> Broker: ", server)
+	fmt.Println(">> Port: ", port)
 
 	// Source: https://github.com/eclipse/paho.mqtt.golang/blob/master/cmd/simple/main.go
 	var example mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -132,7 +144,7 @@ func demo() {
 	mqtt.ERROR = log.New(os.Stdout, "", 0)
 
 	// Initial Connection
-	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", mqttBrokerIP, mqttBrokerPort))
+	opts := mqtt.NewClientOptions().AddBroker(fmt.Sprintf("tcp://%s:%d", server, port))
 	opts.SetKeepAlive(2 * time.Second)
 	opts.SetDefaultPublishHandler(example)
 	opts.SetPingTimeout(1 * time.Second)
@@ -144,19 +156,19 @@ func demo() {
 	}
 
 	// Subscribe to a topic
-	if token := client.Subscribe(mqttBrokerTopic, 0, nil); token.Wait() && token.Error() != nil {
+	if token := client.Subscribe(topic, 0, nil); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
 
 	// Publish to a topic
-	token := client.Publish(mqttBrokerTopic, 0, false, mqttBrokerMessage)
+	token := client.Publish(topic, 0, false, message)
 	token.Wait()
 
 	time.Sleep(6 * time.Second)
 
 	// Disconnect from the broker
-	if token := client.Unsubscribe(mqttBrokerTopic); token.Wait() && token.Error() != nil {
+	if token := client.Unsubscribe(topic); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
@@ -168,20 +180,35 @@ func demo() {
 }
 
 func main() {
+	data, err := os.ReadFile("config.yaml")
 
-	// Configuration Options
+	if err != nil {
+		panic(err)
+	}
 
-	diodeInputSideIP := "192.168.1.99"
-	diodeTcpPassthroughPort := 50000
+	var config Configuration
 
-	targetTcpServerIP := "192.168.1.20"
-	targetTcpServerPort := 503
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		panic(err)
+	}
+
+	// Configuration Settings
+
+	diodeInputSideIP := config.Input.IP
+	diodeTCPPassthroughPort := config.Input.Port
+	targetTCPServerIP := config.Output.IP
+	targetTCPServerPort := config.Output.Port
+
+	mqttBrokerIP := config.Broker.Server
+	mqttBrokerPort := config.Broker.Port
+	mqttBrokerMessage := config.Broker.Message
+	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
 		Name:  "diode",
-		Usage: "A command line tool for interacting with data diodes.",
+		Usage: "Tool for interacting with data diode(s) via command-line interface (CLI).",
 		Action: func(cCtx *cli.Context) error {
-			fmt.Println(quote.Go())
+			fmt.Println("diode: try 'diode --help' for more information")
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -191,7 +218,7 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					newClient(diodeInputSideIP, diodeTcpPassthroughPort)
+					newClient(diodeInputSideIP, diodeTCPPassthroughPort)
 					return nil
 				},
 			},
@@ -201,7 +228,7 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					newServer(targetTcpServerIP, targetTcpServerPort)
+					newServer(targetTCPServerIP, targetTCPServerPort)
 					return nil
 				},
 			},
@@ -211,10 +238,7 @@ func main() {
 				Usage:   "Debug diagnostics via configuration settings",
 				Action: func(dCtx *cli.Context) error {
 					fmt.Println("----- DIAGNOSTICS -----")
-					input := fmt.Sprintf("%s:%d", diodeInputSideIP, diodeTcpPassthroughPort)
-					output := fmt.Sprintf("%s:%d", targetTcpServerIP, targetTcpServerPort)
-					fmt.Println(">> Client: ", input)
-					fmt.Println(">> Server: ", output)
+					fmt.Printf("%+v\n", config)
 					return nil
 				},
 			},
@@ -231,10 +255,10 @@ func main() {
 			{
 				Name:    "mqtt",
 				Aliases: []string{"m"},
-				Usage:   "MQTT (republisher) demo",
+				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					demo()
+					demoRepublisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
 					return nil
 				},
 			},
@@ -243,7 +267,7 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version 0.0.3")
+					fmt.Println(">> diode version 0.0.4")
 					return nil
 				},
 			},

@@ -1,8 +1,6 @@
 package main
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewClient(t *testing.T) {
 	name := "Input"

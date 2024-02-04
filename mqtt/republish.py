@@ -3,25 +3,11 @@
 import socket
 import paho.mqtt.client as mqtt
 import json
+import yaml
 from datetime import datetime
 
-# Configuration Settings
-
-targetTcpServerIP = "192.168.1.20"
-targetTcpServerPort = 503
-
-mqttBrokerIP = "test.mosquitto.org"
-mqttBrokerPort = 1883
-mqttTopic = "test/message"
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((targetTcpServerIP, targetTcpServerPort))
-server.listen(1)
-
-mqtt_client = mqtt.Client()
-mqtt_client.connect(mqttBrokerIP, mqttBrokerPort)
-
-while True:
+def stream():
+    """Republish TCP stream to MQTT broker."""
     print(">> Waiting for connection...")
     connection, client = server.accept()
 
@@ -47,3 +33,30 @@ while True:
 
     finally:
         connection.close()
+
+if __name__ == "__main__":
+    print("🚀 Data Diode TCP Stream Republisher")
+
+    with open("config.yaml", "r") as file:
+        diode = yaml.safe_load(file)
+
+    # Configuration Settings
+
+    targetTCPServerIP = diode["output"]["ip"]
+    targetTCPServerPort = diode["output"]["port"]
+    mqttBrokerIP = diode["broker"]["server"]
+    mqttBrokerPort = diode["broker"]["port"]
+    mqttTopic = diode["broker"]["topic"]
+
+    try:
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((targetTCPServerIP, targetTCPServerPort))
+        server.listen(1)
+
+        mqtt_client = mqtt.Client()
+        mqtt_client.connect(mqttBrokerIP, mqttBrokerPort)
+
+        while True:
+            stream()
+    except OSError as e:
+        print("⚠️ {}".format(e))
