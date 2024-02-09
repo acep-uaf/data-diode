@@ -19,6 +19,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	SemVer string
+)
+
 type Configuration struct {
 	Input struct {
 		IP   string
@@ -267,7 +271,7 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version 0.0.4")
+					fmt.Println(">> diode version " + SemVer)
 					return nil
 				},
 			},
