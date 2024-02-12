@@ -23,6 +23,12 @@ var (
 	SemVer string
 )
 
+const (
+	CONN_HOST = "localhost"
+	CONN_PORT = "3333"
+	CONN_TYPE = "tcp"
+)
+
 type Configuration struct {
 	Input struct {
 		IP   string
@@ -37,6 +43,29 @@ type Configuration struct {
 		Port    int
 		Topic   string
 		Message string
+	}
+}
+
+func newTCPServer() {
+	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
+
+	if err != nil {
+		fmt.Println(">> Error listening: ", err.Error())
+		return
+	}
+	defer listener.Close()
+
+	fmt.Println(">> Server listening on " + CONN_HOST + ":" + CONN_PORT)
+
+	for {
+		conn, err := listener.Accept()
+
+		if err != nil {
+			fmt.Println(">> Error accepting: ", err.Error())
+			return
+		}
+
+		go requestHandler(conn)
 	}
 }
 
@@ -128,9 +157,24 @@ func communicationHandler(connection net.Conn) {
 
 }
 
-func sampleMetrics() {
+func requestHandler(conn net.Conn) {
+	buffer := make([]byte, 1024)
+
+	_, err := conn.Read(buffer)
+
+	if err != nil {
+		fmt.Println(">> Error reading: ", err.Error())
+	}
+
+	conn.Write([]byte("Message received."))
+
+	conn.Close()
+}
+
+func sampleMetrics(server string, port int) {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
+	newClient(server, port)
 }
 
 func demoRepublisher(server string, port int, topic string, message string) {
@@ -237,6 +281,16 @@ func main() {
 				},
 			},
 			{
+				Name:    "test",
+				Aliases: []string{"t"},
+				Usage:   "Testing state synchronization via diode I/O",
+				Action: func(tCtx *cli.Context) error {
+					fmt.Println("----- TEST -----")
+					newTCPServer()
+					return nil
+				},
+			},
+			{
 				Name:    "diagnostics",
 				Aliases: []string{"d"},
 				Usage:   "Debug diagnostics via configuration settings",
@@ -252,7 +306,7 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					sampleMetrics()
+					sampleMetrics(CONN_HOST, 3333)
 					return nil
 				},
 			},
