@@ -1,13 +1,13 @@
-package main
+package utility
 
 import (
 	"crypto/sha256"
 	"fmt"
-
-	"github.com/guptarohit/asciigraph"
+	"math/rand"
+	"time"
 )
 
-func checksum() {
+func Checksum() {
 	// https://en.wikipedia.org/wiki/Rolling_hash
 
 	passthrough := []string{
@@ -23,14 +23,7 @@ func checksum() {
 	}
 }
 
-func example() {
-	definition := []float64{0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144}
-	graph := asciigraph.Plot(definition)
-
-	fmt.Println(graph)
-}
-
-func main() {
-	checksum()
-	example()
+func Value() int {
+	randGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return randGenerator.Intn(100)
 }

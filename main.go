@@ -14,6 +14,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/acep-uaf/data-diode/utility"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -174,7 +175,7 @@ func requestHandler(conn net.Conn) {
 func sampleMetrics(server string, port int) {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
-	newClient(server, port)
+	fmt.Println(">> Value: ", utility.Value())
 }
 
 func demoRepublisher(server string, port int, topic string, message string) {
