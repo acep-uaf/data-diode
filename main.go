@@ -10,7 +10,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"time"
 
@@ -21,12 +20,6 @@ import (
 
 var (
 	SemVer string
-)
-
-const (
-	CONN_HOST = "localhost"
-	CONN_PORT = "3333"
-	CONN_TYPE = "tcp"
 )
 
 type Configuration struct {
@@ -46,135 +39,11 @@ type Configuration struct {
 	}
 }
 
-func newTCPServer() {
-	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
-
-	if err != nil {
-		fmt.Println(">> Error listening: ", err.Error())
-		return
-	}
-	defer listener.Close()
-
-	fmt.Println(">> Server listening on " + CONN_HOST + ":" + CONN_PORT)
-
-	for {
-		conn, err := listener.Accept()
-
-		if err != nil {
-			fmt.Println(">> Error accepting: ", err.Error())
-			return
-		}
-
-		go requestHandler(conn)
-	}
-}
-
-func newClient(ip string, port int) {
-	// Create a socket
-
-	client, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), time.Second)
-
-	if err != nil {
-		fmt.Println(">> Error establishing connection to the diode input side: ", err.Error())
-		log.Fatal(err)
-	}
-	defer client.Close()
-
-	numberOfSends := 1
-
-	for {
-		sendMessage := fmt.Sprintf("This is TCP passthrough test message number: %d", numberOfSends)
-		_, err := client.Write([]byte(sendMessage))
-		if err != nil {
-			fmt.Println(">> Error sending message to the diode input side: ", err.Error())
-			log.Fatal(err)
-			break
-		}
-
-		// if string(response) == "OK\r\n" {
-		// 	fmt.Println(">> Message sent successfully!")
-		// }
-
-		numberOfSends++
-
-		time.Sleep(1 * time.Second)
-	}
-}
-
-func newServer(ip string, port int) {
-	// Begin listening for incoming connections
-
-	server, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ip, port))
-
-	if err != nil {
-		fmt.Println(">> Error listening for incoming connections: ", err.Error())
-		return
-	}
-	defer server.Close()
-
-	fmt.Printf(">> Server listening on %s:%d\n", ip, port)
-
-	for {
-		// Wait for connection
-		connection, err := server.Accept()
-
-		if err != nil {
-			fmt.Println(">> Error accepting connection: ", err.Error())
-			return
-		}
-
-		fmt.Println("Connected to client IP:", connection.RemoteAddr().String())
-
-		go communicationHandler(connection)
-
-	}
-
-}
-
-func communicationHandler(connection net.Conn) {
-
-	defer connection.Close()
-
-	// Buffer for incoming data (holding recieved data)
-	buffer := make([]byte, 10240)
-
-	for {
-		// Read incoming data into buffer
-		bytesRead, err := connection.Read(buffer)
-		if err != nil {
-			fmt.Println(">> Error reading: ", err.Error())
-			break
-		}
-
-		if bytesRead > 0 {
-			fmt.Println(">> Message recieved: ", string(buffer[:bytesRead]))
-		}
-
-		if bytesRead < 10240 {
-			break
-		}
-	}
-
-}
-
-func requestHandler(conn net.Conn) {
-	buffer := make([]byte, 1024)
-
-	_, err := conn.Read(buffer)
-
-	if err != nil {
-		fmt.Println(">> Error reading: ", err.Error())
-	}
-
-	conn.Write([]byte("Message received."))
-
-	conn.Close()
-}
-
 func sampleMetrics(server string, port int) {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
 	fmt.Println(">> Value: ", utility.Value())
+	// utility.Client(server, port)
 }
 
 func main() {
@@ -216,7 +85,7 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					newClient(diodeInputSideIP, diodeTCPPassthroughPort)
+					utility.Client(diodeInputSideIP, diodeTCPPassthroughPort)
 					return nil
 				},
 			},
@@ -226,7 +95,7 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					newServer(targetTCPServerIP, targetTCPServerPort)
+					utility.Server(targetTCPServerIP, targetTCPServerPort)
 					return nil
 				},
 			},
@@ -236,7 +105,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					newTCPServer()
+					utility.TCPServer()
 					return nil
 				},
 			},
@@ -256,7 +125,7 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					sampleMetrics(CONN_HOST, 3333)
+					sampleMetrics(utility.CONN_HOST, 3333)
 					return nil
 				},
 			},
