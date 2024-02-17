@@ -5,9 +5,7 @@ output:
   ip: "192.168.1.20"
   port: 503
 broker:
-  # server: "test.mosquitto.org"
-  # server: "localhost"
-  server: "host.docker.internal"
+  server: "test.mosquitto.org"
   port: 1883
   topic: "test/message"
   message: "Hello, world."

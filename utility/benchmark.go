@@ -2,25 +2,32 @@ package utility
 
 import (
 	"crypto/sha256"
-	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
 	"time"
 )
 
-func Checksum() {
+func Checksum() [32]byte {
+	location := "https://www.gutenberg.org/cache/epub/2701/pg2701.txt"
+
+	resp, err := http.Get(location)
+
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
 	// https://en.wikipedia.org/wiki/Rolling_hash
 
-	passthrough := []string{
-		"hello",
-		"world",
-	}
+	hash := sha256.Sum256([]byte(body))
 
-	fmt.Println(">> Words: ", passthrough)
-
-	for _, word := range passthrough {
-		sum := sha256.Sum256([]byte(word))
-		fmt.Printf("%x\n", sum)
-	}
+	return hash
 }
 
 func Value() int {

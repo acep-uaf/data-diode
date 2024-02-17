@@ -105,7 +105,8 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					utility.TCPServer()
+					example := utility.Checksum()
+					fmt.Printf(">> Checksum: %x\n", example)
 					return nil
 				},
 			},
