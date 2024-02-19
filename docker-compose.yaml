@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    container_name: example-eclipse-mosquitto
+    volumes:
+      - type: bind
+        source: ./config/mosquitto.conf
+        target: /mosquitto/config/mosquitto.conf
+    ports:
+      - target: 1883
+        published: 1883
+        protocol: tcp
+        mode: host
+  mqtt-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sample-client-connection
+    depends_on:
+      - mqtt-broker
+
+volumes:
+  data:
+    name: "mqtt-benchmark-data"
