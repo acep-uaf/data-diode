@@ -4,7 +4,7 @@ Scripts for verifying TCP passthrough functionality.
 
 ## Development Instructions
 
-> [!NOTE]
+> [!TIP]
 > This project utilizes [`go`](https://go.dev/) for module management.
 > You can find installation instructions for `1.22.0` via https://go.dev/doc/install.
 
@@ -13,7 +13,10 @@ Scripts for verifying TCP passthrough functionality.
 - Build binary: `make`
 - CLI: `./diode [options...]`
 
-#### Architecture Diagram
+#### Branch Management
+
+- `main` → production ready environment.
+- `dev` → testing changes to be merged into `main`.
 
 #### Directory Structure
 
@@ -40,6 +43,19 @@ Scripts for verifying TCP passthrough functionality.
 
 ```
 
+#### Architecture Diagram (WIP)
+
+```mermaid
+graph LR
+    A("Publish (MQTT)") --> B(TCP Client)
+    B --> C(Data Diode)
+    C --> D(TCP Server)
+    D --> E("Subscribe (MQTT)")
+```
+
+> [!NOTE]
+> Operational Technology (OT) vs. Information Technology (IT) system boundaries.
+
 ## User Stories
 
 #### Scenario Planning
@@ -59,8 +75,6 @@ Scripts for verifying TCP passthrough functionality.
 
 #### Experimental Design
 
-- [docs/SOP.md](docs/SOP.md)
-
-###### Device Configuration
+###### [Device Configuration](docs/SOP.md)
 
 [^1]: https://csrc.nist.gov/glossary/term/tactics_techniques_and_procedures
