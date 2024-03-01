@@ -6,7 +6,7 @@ Scripts for verifying TCP passthrough functionality.
 
 > [!TIP]
 > This project utilizes [`go`](https://go.dev/) for module management.
-> You can find installation instructions for `1.22.0` via https://go.dev/doc/install.
+> You can find installation instructions via https://go.dev/doc/install.
 
 - Clone repository: `gh repo clone acep-uaf/data-diode`
 - Source navigation: `cd data-diode`
@@ -31,6 +31,7 @@ Scripts for verifying TCP passthrough functionality.
 ├── docs
 ├── go.mod
 ├── go.sum
+├── insights
 ├── Makefile
 ├── mqtt
 ├── Pipfile
@@ -38,8 +39,6 @@ Scripts for verifying TCP passthrough functionality.
 ├── README.md
 ├── sample
 └── utility
-
-5 directories, 11 files
 
 ```
 

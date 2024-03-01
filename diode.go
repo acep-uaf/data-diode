@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/acep-uaf/data-diode/insights"
 	"github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -42,8 +43,7 @@ type Configuration struct {
 func sampleMetrics(server string, port int) {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
-	fmt.Println(">> Value: ", utility.Value())
-	// utility.Client(server, port)
+	fmt.Println(">> Value: ", analysis.Value())
 }
 
 func main() {
@@ -105,7 +105,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					utility.Validation()
+					analysis.Validation()
 					return nil
 				},
 			},

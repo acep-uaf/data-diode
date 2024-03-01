@@ -1,4 +1,4 @@
-package utility
+package analysis
 
 import (
 	"fmt"
@@ -27,4 +27,12 @@ func Isolation() {
 
 func Validation() {
 	fmt.Println(">> Variable Packet Size")
+
+	example := []string{
+		"Latency", "Throughput", "Bandwidth", "Packet Queue",
+	}
+
+	for _, v := range example {
+		fmt.Println("* ", v)
+	}
 }
