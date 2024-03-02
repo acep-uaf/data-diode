@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/acep-uaf/data-diode/utility"
+	insights "github.com/acep-uaf/data-diode/insights"
 )
 
 func TestCLI(t *testing.T) {
@@ -26,7 +26,7 @@ func TestConfiguration(t *testing.T) {
 }
 
 func TestFileContents(t *testing.T) {
-	got := fmt.Sprintf("%x", utility.Checksum())
+	got := fmt.Sprintf("%x", insights.Checksum())
 	want := "ed03bb5d7385010c645c2c72ceabea3b15806db757005071309745c59933586f"
 
 	if got != want {
