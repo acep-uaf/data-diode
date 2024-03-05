@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/acep-uaf/data-diode/insights"
+	analysis "github.com/acep-uaf/data-diode/insights"
 	"github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -25,18 +25,22 @@ var (
 
 type Configuration struct {
 	Input struct {
-		IP   string
-		Port int
+		IP      string
+		Port    int
+		Timeout int
 	}
 	Output struct {
 		IP   string
 		Port int
+		TLS  bool
 	}
 	Broker struct {
-		Server  string
-		Port    int
-		Topic   string
-		Message string
+		Server   string
+		Port     int
+		Topic    string
+		Message  string
+		Index    int
+		Checksum []string
 	}
 }
 

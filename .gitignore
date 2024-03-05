@@ -20,5 +20,5 @@
 # Go workspace file
 go.work
 
-# xperimental results
+# Input source → experimental results
 *.txt

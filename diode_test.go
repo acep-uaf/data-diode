@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	insights "github.com/acep-uaf/data-diode/insights"
@@ -17,11 +18,9 @@ func TestCLI(t *testing.T) {
 }
 
 func TestConfiguration(t *testing.T) {
-	got := Configuration{}
-	want := Configuration{}
-
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+	_, err := os.Stat("config.yaml")
+	if os.IsNotExist(err) {
+		t.Errorf("[!] config.yaml does not exist")
 	}
 }
 
