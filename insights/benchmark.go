@@ -9,7 +9,7 @@ import (
 )
 
 func Checksum() [32]byte {
-	location := "https://www.gutenberg.org/cache/epub/2701/pg2701.txt"
+	location := "https://www.gutenberg.org/cache/epub/84/pg84.txt"
 
 	resp, err := http.Get(location)
 

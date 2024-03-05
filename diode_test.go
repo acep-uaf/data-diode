@@ -27,7 +27,7 @@ func TestConfiguration(t *testing.T) {
 
 func TestFileContents(t *testing.T) {
 	got := fmt.Sprintf("%x", insights.Checksum())
-	want := "ed03bb5d7385010c645c2c72ceabea3b15806db757005071309745c59933586f"
+	want := "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
 
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
