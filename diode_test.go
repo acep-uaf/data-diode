@@ -18,7 +18,7 @@ func TestCLI(t *testing.T) {
 }
 
 func TestConfiguration(t *testing.T) {
-	_, err := os.Stat("config.yaml")
+	_, err := os.Stat("config/settings.yaml")
 	if os.IsNotExist(err) {
 		t.Errorf("[!] config.yaml does not exist")
 	}

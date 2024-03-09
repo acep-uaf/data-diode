@@ -51,7 +51,7 @@ func sampleMetrics(server string, port int) {
 }
 
 func main() {
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile("config/settings.yaml")
 
 	if err != nil {
 		panic(err)
