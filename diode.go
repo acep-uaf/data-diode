@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/acep-uaf/data-diode/insights"
+	analysis "github.com/acep-uaf/data-diode/insights"
 	"github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -25,19 +25,26 @@ var (
 
 type Configuration struct {
 	Input struct {
-		IP   string
-		Port int
+		IP      string
+		Port    int
+		Timeout int
 	}
 	Output struct {
 		IP   string
 		Port int
+		TLS  bool
 	}
 	Broker struct {
 		Server  string
 		Port    int
 		Topic   string
-		Message string
 	}
+}
+
+func exampleContents() {
+	sample := utility.ReadLineContent("docs/example.txt")
+	utility.PrintFileContent(sample)
+	utility.OutputStatistics(sample)
 }
 
 func sampleMetrics(server string, port int) {
@@ -47,7 +54,7 @@ func sampleMetrics(server string, port int) {
 }
 
 func main() {
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile("config/settings.yaml")
 
 	if err != nil {
 		panic(err)
@@ -68,7 +75,6 @@ func main() {
 
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
-	mqttBrokerMessage := config.Broker.Message
 	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
@@ -105,7 +111,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					analysis.Validation()
+					exampleContents()
 					return nil
 				},
 			},
@@ -135,7 +141,32 @@ func main() {
 				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+
+					location := "docs/example.txt"
+					fileContent := utility.ReadLineContent(location)
+
+					fmt.Println(">> Server: ", mqttBrokerIP)
+					fmt.Println(">> Topic: ", mqttBrokerTopic)
+					fmt.Println(">> Port: ", mqttBrokerPort)
+
+					start := time.Now()
+
+					for i := 1; i <= len(fileContent.Lines); i++ {
+						utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
+					}
+
+					t := time.Now()
+
+					elapsed := t.Sub(start)
+
+					if len(fileContent.Lines) == 0 {
+						fmt.Println(">> No message content sent.")
+					} else if len(fileContent.Lines) == 1 {
+						fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+					} else {
+						fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+					}
+
 					return nil
 				},
 			},

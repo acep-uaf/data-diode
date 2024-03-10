@@ -1,13 +1,67 @@
 package utility
 
 import (
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+
+type Message struct {
+	Index    int
+	Topic    string
+	Payload  string
+	Checksum string
+}
+
+var (
+	counterMutex   sync.Mutex
+	messageCounter int
+)
+
+func Craft(topic, payload string) Message {
+	counterMutex.Lock()
+	defer counterMutex.Unlock()
+
+	// TODO: Independent of the topic, the message counter should be incremented?
+	messageCounter++
+
+	return Message{
+		Index:    messageCounter,
+		Topic:    topic,
+		Payload:  payload,
+		Checksum: Verification(payload),
+	}
+}
+
+func Observability(server string, port int, topic string, message string) {
+	broker := fmt.Sprintf("tcp://%s:%d", server, port)
+	clientID := "go_mqtt_client"
+
+	opts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(clientID)
+	client := mqtt.NewClient(opts)
+
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+
+	defer client.Disconnect(250) // ms
+
+	sample := Craft(topic, message)
+
+	jsonPackage, err := json.Marshal(sample)
+	if err != nil {
+		panic(err)
+	}
+
+	token := client.Publish(topic, 0, false, jsonPackage)
+	token.Wait()
+}
 
 func Republisher(server string, port int, topic string, message string) {
 	fmt.Println(">> MQTT")
@@ -57,4 +111,10 @@ func Republisher(server string, port int, topic string, message string) {
 
 	time.Sleep(1 * time.Second)
 
+}
+
+func Verification(data string) string {
+	hash := md5.New()
+	hash.Write([]byte(data))
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }

@@ -1,11 +1,13 @@
+# Data Diode Settings
 input:
   ip: "192.168.1.99"
   port: 50000
+  timeout: 60 # seconds
 output:
   ip: "192.168.1.20"
   port: 503
+  tls: false
 broker:
   server: "test.mosquitto.org"
   port: 1883
-  topic: "test/message"
-  message: "Hello, world."
+  topic: "diode/telemetry"
