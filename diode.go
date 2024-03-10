@@ -109,7 +109,8 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					analysis.Validation()
+					sample := utility.ReadFileContent("docs/example.txt")
+					utility.PrintFileContent(sample)
 					return nil
 				},
 			},
