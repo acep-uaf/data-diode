@@ -38,7 +38,6 @@ type Configuration struct {
 		Server  string
 		Port    int
 		Topic   string
-		Message string
 	}
 }
 
