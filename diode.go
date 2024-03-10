@@ -140,7 +140,7 @@ func main() {
 				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+					utility.Telemetry(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
 					return nil
 				},
 			},

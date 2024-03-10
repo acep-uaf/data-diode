@@ -33,12 +33,7 @@ func ReadFileContent(location string) FileContent {
 }
 
 func PrintFileContent(content FileContent) {
-	counter := 0
 	for _, line := range content.Content {
-		fmt.Println(">> File content: ", line)
-		counter++
-		if counter == 100 {
-			break
-		}
+		fmt.Println(">> ", line)
 	}
 }

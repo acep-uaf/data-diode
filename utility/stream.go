@@ -1,6 +1,8 @@
 package utility
 
 import (
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +10,13 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+
+type Message struct {
+	Index    int
+	Topic    string
+	Payload  string
+	Checksum string
+}
 
 func Republisher(server string, port int, topic string, message string) {
 	fmt.Println(">> MQTT")
@@ -57,4 +66,39 @@ func Republisher(server string, port int, topic string, message string) {
 
 	time.Sleep(1 * time.Second)
 
+}
+
+func Telemetry(server string, port int, topic string, message string) {
+	broker := fmt.Sprintf("tcp://%s:%d", server, port)
+	clientID := "go_mqtt_client"
+
+	opts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(clientID)
+	client := mqtt.NewClient(opts)
+
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+
+	defer client.Disconnect(250) // ms
+
+	sample := Message{
+		Index:    42,
+		Topic:    topic,
+		Payload:  message,
+		Checksum: Verification(message),
+	}
+
+	jsonPackage, err := json.Marshal(sample)
+	if err != nil {
+		panic(err)
+	}
+
+	token := client.Publish(topic, 0, false, jsonPackage)
+	token.Wait()
+}
+
+func Verification(data string) string {
+	hash := md5.New()
+	hash.Write([]byte(data))
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }

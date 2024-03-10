@@ -12,5 +12,3 @@ broker:
   port: 1883
   topic: "diode/telemetry"
   message: "Hello, world."
-  index: 42
-  checksum: ["MD5", "SHA-1", "SHA-256"]
