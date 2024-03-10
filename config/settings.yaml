@@ -11,4 +11,3 @@ broker:
   server: "test.mosquitto.org"
   port: 1883
   topic: "diode/telemetry"
-  message: "Hello, world."
