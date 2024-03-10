@@ -35,12 +35,10 @@ type Configuration struct {
 		TLS  bool
 	}
 	Broker struct {
-		Server   string
-		Port     int
-		Topic    string
-		Message  string
-		Index    int
-		Checksum []string
+		Server  string
+		Port    int
+		Topic   string
+		Message string
 	}
 }
 
@@ -140,7 +138,7 @@ func main() {
 				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Telemetry(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+					utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
 					return nil
 				},
 			},
