@@ -7,33 +7,55 @@ import (
 	"os"
 )
 
-type FileContent struct {
-	Content []string
+type LineContent struct {
+	Number  int
+	Content string
 }
 
-func ReadFileContent(location string) FileContent {
+type FileContent struct {
+	Lines map[int]string
+}
+
+type Readability struct {
+	Words      int
+	Characters int
+	Paragraphs int
+	Sentences  int
+}
+
+func ReadLineContent(location string) FileContent {
 	file, err := os.Open(location)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	var content []string
+	lines := make(map[int]string)
 
 	scanner := bufio.NewScanner(file)
+
+	lineNumber := 1
+
 	for scanner.Scan() {
-		content = append(content, scanner.Text())
+		lineContent := scanner.Text()
+		lines[lineNumber] = lineContent
+		lineNumber++
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	return FileContent{Content: content}
+	return FileContent{Lines: lines}
+}
+
+func OutputStatistics(content FileContent) {
+	// ? Contextual information about the file content.
+	fmt.Println(">> Number of lines: ", len(content.Lines))
 }
 
 func PrintFileContent(content FileContent) {
-	for _, line := range content.Content {
-		fmt.Println(">> ", line)
+	for i := 1; i <= len(content.Lines); i++ {
+		fmt.Println(">> ", content.Lines[i])
 	}
 }

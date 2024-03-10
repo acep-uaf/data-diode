@@ -42,6 +42,12 @@ type Configuration struct {
 	}
 }
 
+func exampleContents() {
+	sample := utility.ReadLineContent("docs/example.txt")
+	utility.PrintFileContent(sample)
+	utility.OutputStatistics(sample)
+}
+
 func sampleMetrics(server string, port int) {
 	fmt.Println(">> Local time: ", time.Now())
 	fmt.Println(">> UTC time: ", time.Now().UTC())
@@ -70,7 +76,6 @@ func main() {
 
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
-	mqttBrokerMessage := config.Broker.Message
 	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
@@ -107,8 +112,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					sample := utility.ReadFileContent("docs/example.txt")
-					utility.PrintFileContent(sample)
+					exampleContents()
 					return nil
 				},
 			},
@@ -138,7 +142,32 @@ func main() {
 				Usage:   "MQTT (TCP stream) demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+
+					location := "docs/example.txt"
+					fileContent := utility.ReadLineContent(location)
+
+					fmt.Println(">> Server: ", mqttBrokerIP)
+					fmt.Println(">> Topic: ", mqttBrokerTopic)
+					fmt.Println(">> Port: ", mqttBrokerPort)
+
+					start := time.Now()
+
+					for i := 1; i <= len(fileContent.Lines); i++ {
+						utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
+					}
+
+					t := time.Now()
+
+					elapsed := t.Sub(start)
+
+					if len(fileContent.Lines) == 0 {
+						fmt.Println(">> No message content sent.")
+					} else if len(fileContent.Lines) == 1 {
+						fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+					} else {
+						fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+					}
+
 					return nil
 				},
 			},
