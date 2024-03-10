@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-type LineContent struct {
-	Number  int
-	Content string
-}
-
 type FileContent struct {
 	Lines map[int]string
 }
