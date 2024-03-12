@@ -7,13 +7,11 @@ import (
 )
 
 const (
-	CONN_HOST = "localhost"
-	CONN_PORT = "13337"
 	CONN_TYPE = "tcp"
 	SAMPLE    = 1024
 )
 
-func StartPlaceholderClient() {
+func StartPlaceholderClient(CONN_HOST string, CONN_PORT string, CONN_TYPE string) {
 	upperBound := rand.Intn(1) + 1
 
 	for i := 1; i <= upperBound; i++ {
@@ -28,7 +26,7 @@ func StartPlaceholderClient() {
 	}
 	defer conn.Close()
 
-	message := "The quick brown fox jumps over the lazy dog.\n" // a->z
+	message := "The quick brown fox jumps over the lazy dog.\n"
 
 	_, err = conn.Write([]byte(message))
 
@@ -40,11 +38,10 @@ func StartPlaceholderClient() {
 		return
 	}
 
-	// Server Response
 	fmt.Printf(">> Server response: %s\n", string(buffer[:bytesRead]))
 }
 
-func StartPlaceholderServer() {
+func StartPlaceholderServer(CONN_HOST string, CONN_PORT string, CONN_TYPE string) {
 	listener, err := net.Listen(CONN_TYPE, CONN_HOST+":"+CONN_PORT)
 
 	if err != nil {

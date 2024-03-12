@@ -13,7 +13,6 @@ import (
 	"os"
 	"time"
 
-	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -75,12 +74,6 @@ func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic str
 	}
 }
 
-func sampleMetrics(server string, port int) {
-	fmt.Println(">> Local time: ", time.Now())
-	fmt.Println(">> UTC time: ", time.Now().UTC())
-	fmt.Println(">> Value: ", analysis.Value())
-}
-
 func main() {
 	data, err := os.ReadFile(ConfigSettings)
 
@@ -97,9 +90,9 @@ func main() {
 	// Configuration Settings
 
 	diodeInputSideIP := config.Input.IP
-	diodeTCPPassthroughPort := config.Input.Port
-	targetTCPServerIP := config.Output.IP
-	targetTCPServerPort := config.Output.Port
+	diodePassthroughPort := config.Input.Port
+	targetServerIP := config.Output.IP
+	targetServerPort := config.Output.Port
 
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
@@ -120,8 +113,8 @@ func main() {
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
 					fmt.Println(">> Client IP: ", diodeInputSideIP)
-					fmt.Println(">> Client Port: ", diodeTCPPassthroughPort)
-					utility.StartPlaceholderClient()
+					fmt.Println(">> Client Port: ", diodePassthroughPort)
+					utility.StartPlaceholderClient(diodeInputSideIP, fmt.Sprint(diodePassthroughPort), utility.CONN_TYPE)
 					return nil
 				},
 			},
@@ -131,9 +124,9 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					fmt.Println(">> Server IP: ", targetTCPServerIP)
-					fmt.Println(">> Server Port: ", targetTCPServerPort)
-					utility.StartPlaceholderServer()
+					fmt.Println(">> Server IP: ", targetServerIP)
+					fmt.Println(">> Server Port: ", targetServerPort)
+					utility.StartPlaceholderServer(targetServerIP, fmt.Sprint(targetServerPort), utility.CONN_TYPE)
 					return nil
 				},
 			},
@@ -163,7 +156,6 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					sampleMetrics(utility.CONN_HOST, 3333)
 					return nil
 				},
 			},
