@@ -14,7 +14,7 @@ import (
 	"time"
 
 	analysis "github.com/acep-uaf/data-diode/insights"
-	"github.com/acep-uaf/data-diode/utility"
+	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
@@ -119,7 +119,9 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					utility.Client(diodeInputSideIP, diodeTCPPassthroughPort)
+					fmt.Println(">> Client IP: ", diodeInputSideIP)
+					fmt.Println(">> Client Port: ", diodeTCPPassthroughPort)
+					utility.StartPlaceholderClient()
 					return nil
 				},
 			},
@@ -129,7 +131,9 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					utility.Server(targetTCPServerIP, targetTCPServerPort)
+					fmt.Println(">> Server IP: ", targetTCPServerIP)
+					fmt.Println(">> Server Port: ", targetTCPServerPort)
+					utility.StartPlaceholderServer()
 					return nil
 				},
 			},
