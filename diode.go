@@ -114,7 +114,7 @@ func main() {
 					fmt.Println("----- INPUT -----")
 					fmt.Println(">> Client IP: ", diodeInputSideIP)
 					fmt.Println(">> Client Port: ", diodePassthroughPort)
-					utility.StartPlaceholderClient(diodeInputSideIP, fmt.Sprint(diodePassthroughPort), utility.CONN_TYPE)
+					utility.StartPlaceholderClient(diodeInputSideIP, diodePassthroughPort)
 					return nil
 				},
 			},
@@ -126,7 +126,7 @@ func main() {
 					fmt.Println("----- OUTPUT -----")
 					fmt.Println(">> Server IP: ", targetServerIP)
 					fmt.Println(">> Server Port: ", targetServerPort)
-					utility.StartPlaceholderServer(targetServerIP, fmt.Sprint(targetServerPort), utility.CONN_TYPE)
+					utility.StartPlaceholderServer(targetServerIP, targetServerPort)
 					return nil
 				},
 			},
@@ -156,6 +156,8 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
+					// Perform specific benchmarks here
+					// e.g. ping test, network throughput, system performance, disk I/O, memory usage
 					return nil
 				},
 			},
