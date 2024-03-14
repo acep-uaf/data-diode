@@ -8,6 +8,20 @@ import (
 	insights "github.com/acep-uaf/data-diode/insights"
 )
 
+var (
+	BackupConfiguration = "config/B4-0144-355112.json"
+	SystemSettings      = "config/settings.yaml"
+	FileChecksum        = "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
+)
+
+func TestAPI(t *testing.T) {
+	jsonFile, err := os.Open(BackupConfiguration)
+
+	if err != nil {
+		t.Errorf("[?] %s via %s", err, jsonFile.Name())
+	}
+}
+
 func TestCLI(t *testing.T) {
 	got := "diode"
 	want := "diode"
@@ -18,7 +32,7 @@ func TestCLI(t *testing.T) {
 }
 
 func TestConfiguration(t *testing.T) {
-	_, err := os.Stat("config/settings.yaml")
+	_, err := os.Stat(SystemSettings)
 	if os.IsNotExist(err) {
 		t.Errorf("[!] config.yaml does not exist")
 	}
@@ -26,7 +40,7 @@ func TestConfiguration(t *testing.T) {
 
 func TestFileContents(t *testing.T) {
 	got := fmt.Sprintf("%x", insights.Checksum())
-	want := "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
+	want := FileChecksum
 
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
