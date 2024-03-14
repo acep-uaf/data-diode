@@ -13,41 +13,69 @@ import (
 	"os"
 	"time"
 
-	"github.com/acep-uaf/data-diode/insights"
-	"github.com/acep-uaf/data-diode/utility"
+	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	SemVer string
+	SemVer         string
+	ConfigSettings = "config/settings.yaml"
+	InputTextFile  = "docs/example.txt"
 )
 
 type Configuration struct {
 	Input struct {
-		IP   string
-		Port int
+		IP      string
+		Port    int
+		Timeout int
 	}
 	Output struct {
 		IP   string
 		Port int
+		TLS  bool
 	}
 	Broker struct {
-		Server  string
-		Port    int
-		Topic   string
-		Message string
+		Server string
+		Port   int
+		Topic  string
 	}
 }
 
-func sampleMetrics(server string, port int) {
-	fmt.Println(">> Local time: ", time.Now())
-	fmt.Println(">> UTC time: ", time.Now().UTC())
-	fmt.Println(">> Value: ", analysis.Value())
+func exampleContents(location string) {
+	sample := utility.ReadLineContent(location)
+	utility.PrintFileContent(sample)
+	utility.OutputStatistics(sample)
+}
+
+func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) {
+	fileContent := utility.ReadLineContent(location)
+
+	fmt.Println(">> Server: ", mqttBrokerIP)
+	fmt.Println(">> Topic: ", mqttBrokerTopic)
+	fmt.Println(">> Port: ", mqttBrokerPort)
+
+	start := time.Now()
+
+	for i := 1; i <= len(fileContent.Lines); i++ {
+		utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
+	}
+
+	t := time.Now()
+
+	elapsed := t.Sub(start)
+
+	if len(fileContent.Lines) == 0 {
+		fmt.Println(">> No message content sent.")
+	} else if len(fileContent.Lines) == 1 {
+		fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+	} else {
+		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+	}
 }
 
 func main() {
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile(ConfigSettings)
 
 	if err != nil {
 		panic(err)
@@ -62,13 +90,12 @@ func main() {
 	// Configuration Settings
 
 	diodeInputSideIP := config.Input.IP
-	diodeTCPPassthroughPort := config.Input.Port
-	targetTCPServerIP := config.Output.IP
-	targetTCPServerPort := config.Output.Port
+	diodePassthroughPort := config.Input.Port
+	targetServerIP := config.Output.IP
+	targetServerPort := config.Output.Port
 
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
-	mqttBrokerMessage := config.Broker.Message
 	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
@@ -85,7 +112,9 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					utility.Client(diodeInputSideIP, diodeTCPPassthroughPort)
+					fmt.Println(">> Client IP: ", diodeInputSideIP)
+					fmt.Println(">> Client Port: ", diodePassthroughPort)
+					utility.StartPlaceholderClient(diodeInputSideIP, diodePassthroughPort)
 					return nil
 				},
 			},
@@ -95,7 +124,9 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					utility.Server(targetTCPServerIP, targetTCPServerPort)
+					fmt.Println(">> Server IP: ", targetServerIP)
+					fmt.Println(">> Server Port: ", targetServerPort)
+					utility.StartPlaceholderServer(targetServerIP, targetServerPort)
 					return nil
 				},
 			},
@@ -105,7 +136,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					analysis.Validation()
+					exampleContents(InputTextFile)
 					return nil
 				},
 			},
@@ -125,17 +156,18 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					sampleMetrics(utility.CONN_HOST, 3333)
+					// TODO: Perform specific benchmarks here...
+					// e.g. ping test, network throughput, system performance, disk I/O, memory usage
 					return nil
 				},
 			},
 			{
 				Name:    "mqtt",
 				Aliases: []string{"m"},
-				Usage:   "MQTT (TCP stream) demo",
+				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+					republishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
 					return nil
 				},
 			},

@@ -2,10 +2,25 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	insights "github.com/acep-uaf/data-diode/insights"
 )
+
+var (
+	BackupConfiguration = "config/B4-0144-355112.json"
+	SystemSettings      = "config/settings.yaml"
+	FileChecksum        = "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
+)
+
+func TestAPI(t *testing.T) {
+	jsonFile, err := os.Open(BackupConfiguration)
+
+	if err != nil {
+		t.Errorf("[?] %s via %s", err, jsonFile.Name())
+	}
+}
 
 func TestCLI(t *testing.T) {
 	got := "diode"
@@ -17,19 +32,21 @@ func TestCLI(t *testing.T) {
 }
 
 func TestConfiguration(t *testing.T) {
-	got := Configuration{}
-	want := Configuration{}
+	_, err := os.Stat(SystemSettings)
+	if os.IsNotExist(err) {
+		t.Errorf("[!] config.yaml does not exist")
+	}
+}
+
+func TestFileContents(t *testing.T) {
+	got := fmt.Sprintf("%x", insights.Checksum())
+	want := FileChecksum
 
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
 
-func TestFileContents(t *testing.T) {
-	got := fmt.Sprintf("%x", insights.Checksum())
-	want := "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
-
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
+func TestRepublishContents(t *testing.T) {
+	// TODO: Mock the MQTT client.
 }

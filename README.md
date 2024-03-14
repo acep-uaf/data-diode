@@ -23,7 +23,6 @@ Scripts for verifying TCP passthrough functionality.
 ```zsh
 .
 ├── config
-├── config.yaml
 ├── diode.go
 ├── diode_test.go
 ├── docker-compose.yaml
@@ -33,13 +32,11 @@ Scripts for verifying TCP passthrough functionality.
 ├── go.sum
 ├── insights
 ├── Makefile
-├── mqtt
-├── Pipfile
-├── Pipfile.lock
 ├── README.md
 ├── sample
 └── utility
 
+5 directories, 8 files
 ```
 
 #### Architecture Diagram (WIP)
