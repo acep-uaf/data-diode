@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"path/filepath"
 	"testing"
 
 	insights "github.com/acep-uaf/data-diode/insights"
@@ -23,8 +24,22 @@ var (
 	InterfaceAddress     = "localhost:13337"
 )
 
+type TCP struct {
+	ClientTargetIP      string
+	ClientTargetPort    int
+	ServerTargetIP      string
+	ServerPort          int
+	ServerSocketTimeout int
+}
+
 func TestAPI(t *testing.T) {
 	jsonFile, err := os.Open(BackupConfiguration)
+
+	schema := "CAMIO.2024.1.0"
+	version := filepath.Base(jsonFile.Name())
+
+	// FIXME: Cross reference the JSON contents, schema version, & configuration file?
+	fmt.Println(version, schema)
 
 	if err != nil {
 		t.Errorf("[?] %s via %s", err, jsonFile.Name())
