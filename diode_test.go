@@ -6,11 +6,12 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"strings"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	insights "github.com/acep-uaf/data-diode/insights"
+	"github.com/acep-uaf/data-diode/utility"
 )
 
 var (
@@ -163,7 +164,7 @@ func TestRepublishContents(t *testing.T) {
 
 	// TODO: Mock the MQTT connection.
 
-	republishContents(location, broker, topic, port)
+	utility.RepublishContents(location, broker, topic, port)
 
 	if len(location) == 0 {
 		t.Errorf("[!] No location specified...")

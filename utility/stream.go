@@ -125,6 +125,12 @@ func Republisher(server string, port int, topic string, message string) {
 
 }
 
+func Subscription(server string, port int, topic string) {
+	fmt.Println(">> Activity")
+	fmt.Println(">> Broker: ", server)
+	fmt.Println(">> Port: ", port)
+}
+
 func Verification(data string) string {
 	hash := md5.New()
 	hash.Write([]byte(data))
