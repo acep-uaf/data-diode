@@ -48,7 +48,12 @@ func exampleContents(location string) {
 	utility.OutputStatistics(sample)
 }
 
-func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) {
+func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) error {
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		fmt.Println(">> File not found: ", location)
+		return err
+	}
+
 	fileContent := utility.ReadLineContent(location)
 
 	fmt.Println(">> Server: ", mqttBrokerIP)
@@ -72,6 +77,8 @@ func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic str
 	} else {
 		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
 	}
+
+	return nil
 }
 
 func main() {

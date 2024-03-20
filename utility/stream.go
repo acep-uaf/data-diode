@@ -46,7 +46,7 @@ func Craft(topic, payload string) Message {
 	}
 }
 
-func Observability(server string, port int, topic string, message string) {
+func Observability(server string, port int, topic string, message string) error {
 	broker := fmt.Sprintf("tcp://%s:%d", server, port)
 	clientID := "go_mqtt_client"
 
@@ -54,7 +54,7 @@ func Observability(server string, port int, topic string, message string) {
 	client := mqtt.NewClient(opts)
 
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		return fmt.Errorf(">> Failed to connect to the broker: %v", token.Error())
 	}
 
 	defer client.Disconnect(250) // ms
@@ -63,11 +63,16 @@ func Observability(server string, port int, topic string, message string) {
 
 	jsonPackage, err := json.Marshal(sample)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf(">> Failed to marshal the message: %v", err)
 	}
 
 	token := client.Publish(topic, 0, false, jsonPackage)
 	token.Wait()
+	if token.Error() != nil {
+		return fmt.Errorf(">> Failed to publish the message: %v", token.Error())
+	}
+
+	return nil
 }
 
 func Republisher(server string, port int, topic string, message string) {

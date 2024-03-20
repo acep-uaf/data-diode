@@ -13,13 +13,14 @@ import (
 )
 
 var (
-	BackupConfiguration = "config/B4-0144-355112.json"
-	SystemSettings      = "config/settings.yaml"
-	FileChecksum        = "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
-	SampleMessage       = "Hello, world."
-	InterfaceSize       = 1024
-	InterfaceProtocol   = "tcp"
-	InterfaceAddress    = "localhost:13337"
+	BackupConfiguration  = "config/B4-0144-355112.json"
+	SystemSettings       = "config/settings.yaml"
+	ProjectDocumentation = "docs/SOP.md"
+	FileChecksum         = "477076c6fd8cf48ff2d0159b22bada27588c6fa84918d1c4fc20cd9ddd291dbd"
+	SampleMessage        = "Hello, world."
+	InterfaceSize        = 1024
+	InterfaceProtocol    = "tcp"
+	InterfaceAddress     = "localhost:13337"
 )
 
 func TestAPI(t *testing.T) {
@@ -83,7 +84,7 @@ func TestBinaryContents(t *testing.T) {
 	sample := []byte(SampleMessage)
 
 	if len(sample) == 0 {
-		t.Errorf("[!] No binary contents")
+		t.Errorf("[!] No binary contents...")
 	}
 }
 
@@ -140,5 +141,28 @@ func TestEchoMessage(t *testing.T) {
 }
 
 func TestRepublishContents(t *testing.T) {
+	location := ProjectDocumentation
+	broker := "localhost"
+	topic := "test/message"
+	port := 1883
+
 	// TODO: Mock the MQTT connection.
+
+	republishContents(location, broker, topic, port)
+
+	if len(location) == 0 {
+		t.Errorf("[!] No location specified...")
+	}
+
+	if len(broker) == 0 {
+		t.Errorf("[!] No broker specified...")
+	}
+
+	if len(topic) == 0 {
+		t.Errorf("[!] No topic specified...")
+	}
+
+	if port == 0 {
+		t.Errorf("[!] No port specified...")
+	}
 }
