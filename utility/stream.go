@@ -10,13 +10,16 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/google/uuid"
 )
 
 type Message struct {
-	Index    int
-	Topic    string
-	Payload  string
-	Checksum string
+	Index     int
+	Topic     string
+	Payload   string
+	Checksum  string
+	UUID      string
+	Timestamp time.Time
 }
 
 var (
@@ -28,14 +31,18 @@ func Craft(topic, payload string) Message {
 	counterMutex.Lock()
 	defer counterMutex.Unlock()
 
+	uuid := uuid.New().String()
+
 	// TODO: Independent of the topic, the message counter should be incremented?
 	messageCounter++
 
 	return Message{
-		Index:    messageCounter,
-		Topic:    topic,
-		Payload:  payload,
-		Checksum: Verification(payload),
+		Index:     messageCounter,
+		Topic:     topic,
+		Payload:   payload,
+		Checksum:  Verification(payload),
+		UUID:      uuid,
+		Timestamp: time.Now(),
 	}
 }
 
