@@ -10,13 +10,16 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/google/uuid"
 )
 
 type Message struct {
-	Index    int
-	Topic    string
-	Payload  string
-	Checksum string
+	Index     int
+	Topic     string
+	Payload   string
+	Checksum  string
+	UUID      string
+	Timestamp time.Time
 }
 
 var (
@@ -28,18 +31,22 @@ func Craft(topic, payload string) Message {
 	counterMutex.Lock()
 	defer counterMutex.Unlock()
 
+	uuid := uuid.New().String()
+
 	// TODO: Independent of the topic, the message counter should be incremented?
 	messageCounter++
 
 	return Message{
-		Index:    messageCounter,
-		Topic:    topic,
-		Payload:  payload,
-		Checksum: Verification(payload),
+		Index:     messageCounter,
+		Topic:     topic,
+		Payload:   payload,
+		Checksum:  Verification(payload),
+		UUID:      uuid,
+		Timestamp: time.Now(),
 	}
 }
 
-func Observability(server string, port int, topic string, message string) {
+func Observability(server string, port int, topic string, message string) error {
 	broker := fmt.Sprintf("tcp://%s:%d", server, port)
 	clientID := "go_mqtt_client"
 
@@ -47,7 +54,7 @@ func Observability(server string, port int, topic string, message string) {
 	client := mqtt.NewClient(opts)
 
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		return fmt.Errorf(">> Failed to connect to the broker: %v", token.Error())
 	}
 
 	defer client.Disconnect(250) // ms
@@ -56,11 +63,16 @@ func Observability(server string, port int, topic string, message string) {
 
 	jsonPackage, err := json.Marshal(sample)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf(">> Failed to marshal the message: %v", err)
 	}
 
 	token := client.Publish(topic, 0, false, jsonPackage)
 	token.Wait()
+	if token.Error() != nil {
+		return fmt.Errorf(">> Failed to publish the message: %v", token.Error())
+	}
+
+	return nil
 }
 
 func Republisher(server string, port int, topic string, message string) {
@@ -111,6 +123,12 @@ func Republisher(server string, port int, topic string, message string) {
 
 	time.Sleep(1 * time.Second)
 
+}
+
+func Subscription(server string, port int, topic string) {
+	fmt.Println(">> Activity")
+	fmt.Println(">> Broker: ", server)
+	fmt.Println(">> Port: ", port)
 }
 
 func Verification(data string) string {

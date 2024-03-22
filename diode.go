@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
+	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -39,38 +39,6 @@ type Configuration struct {
 		Server string
 		Port   int
 		Topic  string
-	}
-}
-
-func exampleContents(location string) {
-	sample := utility.ReadLineContent(location)
-	utility.PrintFileContent(sample)
-	utility.OutputStatistics(sample)
-}
-
-func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) {
-	fileContent := utility.ReadLineContent(location)
-
-	fmt.Println(">> Server: ", mqttBrokerIP)
-	fmt.Println(">> Topic: ", mqttBrokerTopic)
-	fmt.Println(">> Port: ", mqttBrokerPort)
-
-	start := time.Now()
-
-	for i := 1; i <= len(fileContent.Lines); i++ {
-		utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
-	}
-
-	t := time.Now()
-
-	elapsed := t.Sub(start)
-
-	if len(fileContent.Lines) == 0 {
-		fmt.Println(">> No message content sent.")
-	} else if len(fileContent.Lines) == 1 {
-		fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
-	} else {
-		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
 	}
 }
 
@@ -136,7 +104,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					exampleContents(InputTextFile)
+					utility.ExampleContents(InputTextFile)
 					return nil
 				},
 			},
@@ -156,8 +124,7 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					// TODO: Perform specific benchmarks here...
-					// e.g. ping test, network throughput, system performance, disk I/O, memory usage
+					analysis.Pong()
 					return nil
 				},
 			},
@@ -167,7 +134,9 @@ func main() {
 				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					republishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
+					// utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
+					fmt.Println("TODO: Listen on a topic; republish contents via TCP, then to the MQTT broker...")
+					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
 					return nil
 				},
 			},

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 type FileContent struct {
@@ -42,6 +43,45 @@ func ReadLineContent(location string) FileContent {
 	}
 
 	return FileContent{Lines: lines}
+}
+
+func ExampleContents(location string) {
+	sample := ReadLineContent(location)
+	PrintFileContent(sample)
+	OutputStatistics(sample)
+}
+
+func RepublishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) error {
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		fmt.Println(">> File not found: ", location)
+		return err
+	}
+
+	fileContent := ReadLineContent(location)
+
+	fmt.Println(">> Server: ", mqttBrokerIP)
+	fmt.Println(">> Topic: ", mqttBrokerTopic)
+	fmt.Println(">> Port: ", mqttBrokerPort)
+
+	start := time.Now()
+
+	for i := 1; i <= len(fileContent.Lines); i++ {
+		Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
+	}
+
+	t := time.Now()
+
+	elapsed := t.Sub(start)
+
+	if len(fileContent.Lines) == 0 {
+		fmt.Println(">> No message content sent.")
+	} else if len(fileContent.Lines) == 1 {
+		fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+	} else {
+		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+	}
+
+	return nil
 }
 
 func OutputStatistics(content FileContent) {

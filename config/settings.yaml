@@ -8,6 +8,6 @@ output:
   port: 13337
   tls: false
 broker:
-  server: "test.mosquitto.org"
+  server: "localhost"
   port: 1883
   topic: "diode/telemetry"
