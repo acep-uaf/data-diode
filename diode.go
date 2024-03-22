@@ -134,9 +134,7 @@ func main() {
 				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					// utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
-					fmt.Println("TODO: Listen on a topic; republish contents via TCP, then to the MQTT broker...")
-					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
+					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, diodeInputSideIP, diodePassthroughPort)
 					return nil
 				},
 			},

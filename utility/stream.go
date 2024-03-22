@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"os/signal"
 	"sync"
 	"time"
 
@@ -125,10 +127,52 @@ func Republisher(server string, port int, topic string, message string) {
 
 }
 
-func Subscription(server string, port int, topic string) {
-	fmt.Println(">> Activity")
+func Subscription(server string, port int, topic string, host string, destination int) {
+	fmt.Println(">> Example Activity")
 	fmt.Println(">> Broker: ", server)
 	fmt.Println(">> Port: ", port)
+
+	// MQTT Broker / Client
+	url := fmt.Sprintf("tcp://%s:%d", server, port)
+	opts := mqtt.NewClientOptions().AddBroker(url)
+	client := mqtt.NewClient(opts)
+
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	}
+
+	// Callback Function (Incoming Messages)
+	handleMessage := func(client mqtt.Client, msg mqtt.Message) {
+		fmt.Printf(">> Received message on topic: '%s': %s\n", msg.Topic(), msg.Payload())
+
+		// Connection Establishment (Target Host)
+		conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, destination))
+		if err != nil {
+			fmt.Println(">> [!] Error connecting to the target host: ", err)
+			return
+		}
+		defer conn.Close()
+
+		// Data Transmission
+		_, err = conn.Write(msg.Payload())
+		if err != nil {
+			fmt.Println(">> [!] Error writing to the target host: ", err)
+			return
+		}
+	}
+
+	// Subscription (Topic)
+	if token := client.Subscribe(topic, 0, handleMessage); token.Wait() && token.Error() != nil {
+		panic(token.Error()) // TODO: Graceful Exit via Error Handling
+	}
+
+	// Client Shutdown (SIGINT)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	client.Unsubscribe(topic)
+	client.Disconnect(250) // ms
 }
 
 func Verification(data string) string {
