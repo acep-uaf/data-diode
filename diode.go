@@ -104,7 +104,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					utility.ExampleContents(InputTextFile)
+					utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
 					return nil
 				},
 			},
@@ -134,7 +134,7 @@ func main() {
 				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, diodeInputSideIP, diodePassthroughPort)
+					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, targetServerIP, targetServerPort)
 					return nil
 				},
 			},

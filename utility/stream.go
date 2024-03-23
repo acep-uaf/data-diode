@@ -128,7 +128,7 @@ func Republisher(server string, port int, topic string, message string) {
 }
 
 func Subscription(server string, port int, topic string, host string, destination int) {
-	fmt.Println(">> Example Activity")
+	fmt.Println(">> Example Broker Activity")
 	fmt.Println(">> Broker: ", server)
 	fmt.Println(">> Port: ", port)
 
@@ -163,7 +163,9 @@ func Subscription(server string, port int, topic string, host string, destinatio
 
 	// Subscription (Topic)
 	if token := client.Subscribe(topic, 0, handleMessage); token.Wait() && token.Error() != nil {
-		panic(token.Error()) // TODO: Graceful Exit via Error Handling
+		if token.Error() != nil {
+			fmt.Println(">> [!] Error subscribing to the topic: ", token.Error())
+		}
 	}
 
 	// Client Shutdown (SIGINT)
