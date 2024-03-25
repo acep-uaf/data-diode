@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"
@@ -40,38 +39,6 @@ type Configuration struct {
 		Server string
 		Port   int
 		Topic  string
-	}
-}
-
-func exampleContents(location string) {
-	sample := utility.ReadLineContent(location)
-	utility.PrintFileContent(sample)
-	utility.OutputStatistics(sample)
-}
-
-func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) {
-	fileContent := utility.ReadLineContent(location)
-
-	fmt.Println(">> Server: ", mqttBrokerIP)
-	fmt.Println(">> Topic: ", mqttBrokerTopic)
-	fmt.Println(">> Port: ", mqttBrokerPort)
-
-	start := time.Now()
-
-	for i := 1; i <= len(fileContent.Lines); i++ {
-		utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
-	}
-
-	t := time.Now()
-
-	elapsed := t.Sub(start)
-
-	if len(fileContent.Lines) == 0 {
-		fmt.Println(">> No message content sent.")
-	} else if len(fileContent.Lines) == 1 {
-		fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
-	} else {
-		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
 	}
 }
 
