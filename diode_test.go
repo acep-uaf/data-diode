@@ -182,3 +182,7 @@ func TestRepublishContents(t *testing.T) {
 		t.Errorf("[!] No port specified...")
 	}
 }
+
+func TestRepublishContents(t *testing.T) {
+	// TODO: Mock the MQTT client.
+}
