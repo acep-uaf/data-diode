@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -136,7 +137,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					exampleContents(InputTextFile)
+					utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
 					return nil
 				},
 			},
@@ -156,8 +157,7 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					// TODO: Perform specific benchmarks here...
-					// e.g. ping test, network throughput, system performance, disk I/O, memory usage
+					analysis.Pong()
 					return nil
 				},
 			},
@@ -167,7 +167,7 @@ func main() {
 				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					republishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
+					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, targetServerIP, targetServerPort)
 					return nil
 				},
 			},

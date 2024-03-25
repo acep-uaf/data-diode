@@ -8,6 +8,21 @@ import (
 	"time"
 )
 
+func Pong() bool {
+	location := "https://example.com/"
+
+	resp, err := http.Get(location)
+
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	println(">> Status: ", resp.Status)
+
+	return true
+}
+
 func Checksum() [32]byte {
 	location := "https://www.gutenberg.org/cache/epub/84/pg84.txt"
 
