@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"

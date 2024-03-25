@@ -183,6 +183,3 @@ func TestRepublishContents(t *testing.T) {
 	}
 }
 
-func TestRepublishContents(t *testing.T) {
-	// TODO: Mock the MQTT client.
-}
