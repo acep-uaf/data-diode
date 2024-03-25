@@ -138,7 +138,7 @@ func Subscription(server string, port int, topic string, host string, destinatio
 	client := mqtt.NewClient(opts)
 
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		fmt.Println(">> [!] Failed to connect to the broker: ", token.Error())
 	}
 
 	// Callback Function (Incoming Messages)

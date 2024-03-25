@@ -87,7 +87,6 @@ func StartPlaceholderClient(host string, port int) {
 
 func StartPlaceholderServer(host string, port int) {
 	listener, err := net.Listen(CONN_TYPE, fmt.Sprintf("%s:%d", host, port))
-
 	if err != nil {
 		fmt.Println(">> [!] Error listening: ", err.Error())
 		return
@@ -100,7 +99,6 @@ func StartPlaceholderServer(host string, port int) {
 		fmt.Println(">> Server waiting for connection...")
 
 		conn, err := listener.Accept()
-
 		if err != nil {
 			fmt.Println(">> [!] Error accepting: ", err.Error())
 			return
@@ -113,16 +111,18 @@ func StartPlaceholderServer(host string, port int) {
 
 			for {
 				data := make([]byte, SAMPLE)
-				_, err := conn.Read(data)
+				bytesRead, err := conn.Read(data)
 				if err != nil {
 					fmt.Println(">> [!] Error receiving data: ", err.Error())
-					break
+					if err.Error() == "EOF" {
+						fmt.Println(">> Connection closed by client.")
+						return
+					}
 				}
 
-				fmt.Printf(">> Received data: %s\n", string(data))
+				fmt.Printf(">> Received data: %s\n", string(data[:bytesRead]))
 
 				_, err = conn.Write([]byte(ACKNOWLEDGEMENT))
-
 				if err != nil {
 					fmt.Println(">> [!] Error sending ACK: ", err.Error())
 					return
