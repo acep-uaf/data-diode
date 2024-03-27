@@ -129,22 +129,11 @@ func main() {
 				},
 			},
 			{
-				Name:    "mqtt",
-				Aliases: []string{"m"},
-				Usage:   "MQTT → TCP stream demo",
-				Action: func(mCtx *cli.Context) error {
-					fmt.Println("----- MQTT -----")
-					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, targetServerIP, targetServerPort)
-					return nil
-				},
-			},
-			{
 				Name:    "mqtt-subscribe",
 				Aliases: []string{"ms"},
 				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
-					// fmt.Println("----- MQTT SUBSCRIBE -----")
-					utility.ReceiveContents()
+					utility.EncapsulateContents()
 					return nil
 				},
 			},
@@ -153,9 +142,7 @@ func main() {
 				Aliases: []string{"mp"},
 				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
 				Action: func(mpCtx *cli.Context) error {
-					fmt.Println("----- MQTT PUBLISH -----")
-					utility.EncapsulatePayload("Hello, world.")
-					// utility.UnencapsulatePayload("123456789")
+					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
 					return nil
 				},
 			},

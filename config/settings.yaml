@@ -10,4 +10,4 @@ output:
 broker:
   server: "localhost"
   port: 1883
-  topic: "diode/telemetry"
+  topic: "diode/#"
