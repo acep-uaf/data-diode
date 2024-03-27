@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
-	github.com/google/uuid v1.6.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/urfave/cli/v2 v2.27.1
 	gopkg.in/yaml.v2 v2.4.0

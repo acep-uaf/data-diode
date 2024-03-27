@@ -154,7 +154,7 @@ func main() {
 				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
 				Action: func(mpCtx *cli.Context) error {
 					fmt.Println("----- MQTT PUBLISH -----")
-					utility.ReceivePayload()
+					utility.ReceiveContents()
 					// utility.UnencapsulatePayload("123456789")
 					return nil
 				},

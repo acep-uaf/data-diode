@@ -1,82 +1,25 @@
 package utility
 
 import (
-	"crypto/md5"
 	"bufio"
-	"encoding/json"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/google/uuid"
 )
 
 type Message struct {
-	Index     int
-	Topic     string
-	Payload   string
-	Checksum  string
-	UUID      string
-	Timestamp time.Time
-}
-
-var (
-	counterMutex   sync.Mutex
-	messageCounter int
-)
-
-func Craft(topic, payload string) Message {
-	counterMutex.Lock()
-	defer counterMutex.Unlock()
-
-	uuid := uuid.New().String()
-
-	// TODO: Independent of the topic, the message counter should be incremented?
-	messageCounter++
-
-	return Message{
-		Index:     messageCounter,
-		Topic:     topic,
-		Payload:   payload,
-		Checksum:  Verification(payload),
-		UUID:      uuid,
-		Timestamp: time.Now(),
-	}
-}
-
-func Observability(server string, port int, topic string, message string) error {
-	broker := fmt.Sprintf("tcp://%s:%d", server, port)
-	clientID := "go_mqtt_client"
-
-	opts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(clientID)
-	client := mqtt.NewClient(opts)
-
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return fmt.Errorf(">> Failed to connect to the broker: %v", token.Error())
-	}
-
-	defer client.Disconnect(250) // ms
-
-	sample := Craft(topic, message)
-
-	jsonPackage, err := json.Marshal(sample)
-	if err != nil {
-		return fmt.Errorf(">> Failed to marshal the message: %v", err)
-	}
-
-	token := client.Publish(topic, 0, false, jsonPackage)
-	token.Wait()
-	if token.Error() != nil {
-		return fmt.Errorf(">> Failed to publish the message: %v", token.Error())
-	}
-
-	return nil
+	Index    int
+	Topic    string
+	Payload  string
+	Checksum string
 }
 
 func Republisher(server string, port int, topic string, message string) {
@@ -179,20 +122,14 @@ func Subscription(server string, port int, topic string, host string, destinatio
 	client.Disconnect(250) // ms
 }
 
-func EncapsulatePayload(message string) {
-	example := base64.StdEncoding.EncodeToString([]byte(message))
-	fmt.Println(">> Encoded message: ", example)
-}
-
-func DetectComplete(message string) {
-	fmt.Println(">> Detecting complete message...")
-}
-
-func ReceivePayload() {
+func ReceiveContents() {
 	scanner := bufio.NewScanner(os.Stdin)
 
+	// TODO: Handle multiple lines of input.
+
 	for scanner.Scan() {
-		fmt.Println(">> Received: ", scanner.Text())
+		payload := scanner.Text()
+		DetectContents(payload)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -200,7 +137,31 @@ func ReceivePayload() {
 	}
 }
 
+func DetectContents(message string) {
+	complete := Message{
+		Index:    42,
+		Topic:    "diode/example/stream",
+		Payload:  message,
+		Checksum: Verification(message),
+	}
+
+	jsonPackage, err := json.Marshal(complete)
+	if err != nil {
+		fmt.Println(">> [!] Error marshalling the message: ", err)
+		return
+	}
+
+	fmt.Println(string(jsonPackage))
+}
+
+func EncapsulatePayload(message string) string {
+	encoded := base64.StdEncoding.EncodeToString([]byte(message))
+	return encoded
+}
+
 func UnencapsulatePayload(message string) {
+	// TODO: Test case(s) for various message lengths and content.
+
 	decoded, err := base64.StdEncoding.DecodeString(message)
 	if err != nil {
 		fmt.Println(">> [!] Error decoding the message: ", err)

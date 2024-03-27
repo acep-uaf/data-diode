@@ -66,7 +66,7 @@ func RepublishContents(location string, mqttBrokerIP string, mqttBrokerTopic str
 	start := time.Now()
 
 	for i := 1; i <= len(fileContent.Lines); i++ {
-		Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
+		// Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
 	}
 
 	t := time.Now()
