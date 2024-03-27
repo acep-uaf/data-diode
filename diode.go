@@ -11,43 +11,39 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
-	"github.com/acep-uaf/data-diode/insights"
-	"github.com/acep-uaf/data-diode/utility"
+	analysis "github.com/acep-uaf/data-diode/insights"
+	utility "github.com/acep-uaf/data-diode/utility"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	SemVer string
+	SemVer         string
+	ConfigSettings = "config/settings.yaml"
+	InputTextFile  = "docs/example.txt"
 )
 
 type Configuration struct {
 	Input struct {
-		IP   string
-		Port int
+		IP      string
+		Port    int
+		Timeout int
 	}
 	Output struct {
 		IP   string
 		Port int
+		TLS  bool
 	}
 	Broker struct {
-		Server  string
-		Port    int
-		Topic   string
-		Message string
+		Server string
+		Port   int
+		Topic  string
 	}
-}
-
-func sampleMetrics(server string, port int) {
-	fmt.Println(">> Local time: ", time.Now())
-	fmt.Println(">> UTC time: ", time.Now().UTC())
-	fmt.Println(">> Value: ", analysis.Value())
 }
 
 func main() {
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile(ConfigSettings)
 
 	if err != nil {
 		panic(err)
@@ -62,13 +58,12 @@ func main() {
 	// Configuration Settings
 
 	diodeInputSideIP := config.Input.IP
-	diodeTCPPassthroughPort := config.Input.Port
-	targetTCPServerIP := config.Output.IP
-	targetTCPServerPort := config.Output.Port
+	diodePassthroughPort := config.Input.Port
+	targetServerIP := config.Output.IP
+	targetServerPort := config.Output.Port
 
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
-	mqttBrokerMessage := config.Broker.Message
 	mqttBrokerTopic := config.Broker.Topic
 
 	app := &cli.App{
@@ -85,7 +80,9 @@ func main() {
 				Usage:   "Input side of the data diode",
 				Action: func(cCtx *cli.Context) error {
 					fmt.Println("----- INPUT -----")
-					utility.Client(diodeInputSideIP, diodeTCPPassthroughPort)
+					fmt.Println(">> Client IP: ", diodeInputSideIP)
+					fmt.Println(">> Client Port: ", diodePassthroughPort)
+					utility.StartPlaceholderClient(diodeInputSideIP, diodePassthroughPort)
 					return nil
 				},
 			},
@@ -95,7 +92,9 @@ func main() {
 				Usage:   "Output side of the data diode",
 				Action: func(sCtx *cli.Context) error {
 					fmt.Println("----- OUTPUT -----")
-					utility.Server(targetTCPServerIP, targetTCPServerPort)
+					fmt.Println(">> Server IP: ", targetServerIP)
+					fmt.Println(">> Server Port: ", targetServerPort)
+					utility.StartPlaceholderServer(targetServerIP, targetServerPort)
 					return nil
 				},
 			},
@@ -105,7 +104,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					analysis.Validation()
+					utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
 					return nil
 				},
 			},
@@ -125,17 +124,17 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					sampleMetrics(utility.CONN_HOST, 3333)
+					analysis.Pong()
 					return nil
 				},
 			},
 			{
 				Name:    "mqtt",
 				Aliases: []string{"m"},
-				Usage:   "MQTT (TCP stream) demo",
+				Usage:   "MQTT → TCP stream demo",
 				Action: func(mCtx *cli.Context) error {
 					fmt.Println("----- MQTT -----")
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, mqttBrokerMessage)
+					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, targetServerIP, targetServerPort)
 					return nil
 				},
 			},

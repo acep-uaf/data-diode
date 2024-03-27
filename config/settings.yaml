@@ -1,0 +1,13 @@
+# Data Diode Settings
+input:
+  ip: "localhost"
+  port: 49152
+  timeout: 60 # seconds
+output:
+  ip: "localhost"
+  port: 13337
+  tls: false
+broker:
+  server: "localhost"
+  port: 1883
+  topic: "diode/telemetry"
