@@ -2,7 +2,9 @@ package utility
 
 import (
 	"crypto/md5"
+	"bufio"
 	"encoding/json"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net"
@@ -177,16 +179,37 @@ func Subscription(server string, port int, topic string, host string, destinatio
 	client.Disconnect(250) // ms
 }
 
-func EncapsulatePayloadMessage() {
-	fmt.Println(">> Subscribing to MQTT broker...")
+func EncapsulatePayload(message string) {
+	example := base64.StdEncoding.EncodeToString([]byte(message))
+	fmt.Println(">> Encoded message: ", example)
 }
 
-func DetectCompleteMessage() {
+func DetectComplete(message string) {
 	fmt.Println(">> Detecting complete message...")
 }
 
-func PublishPayload() {
-	DetectCompleteMessage()
+func ReceivePayload() {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for scanner.Scan() {
+		fmt.Println(">> Received: ", scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println(">> [!] Error reading from stdin: ", err)
+	}
+}
+
+func UnencapsulatePayload(message string) {
+	decoded, err := base64.StdEncoding.DecodeString(message)
+	if err != nil {
+		fmt.Println(">> [!] Error decoding the message: ", err)
+		return
+	}
+	fmt.Println(">> Decoded message: ", string(decoded))
+}
+
+func PublishPayload(message string) {
 	fmt.Println(">> Publishing to MQTT broker...")
 }
 
