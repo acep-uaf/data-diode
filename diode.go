@@ -143,8 +143,8 @@ func main() {
 				Aliases: []string{"ms"},
 				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
-					fmt.Println("----- MQTT SUBSCRIBE -----")
-					utility.EncapsulatePayload("Hello, world.")
+					// fmt.Println("----- MQTT SUBSCRIBE -----")
+					utility.ReceiveContents()
 					return nil
 				},
 			},
@@ -154,7 +154,7 @@ func main() {
 				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
 				Action: func(mpCtx *cli.Context) error {
 					fmt.Println("----- MQTT PUBLISH -----")
-					utility.ReceiveContents()
+					utility.EncapsulatePayload("Hello, world.")
 					// utility.UnencapsulatePayload("123456789")
 					return nil
 				},

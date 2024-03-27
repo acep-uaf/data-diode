@@ -10,17 +10,23 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Message struct {
-	Index    int
+	Metadata int
 	Topic    string
 	Payload  string
 	Checksum string
 }
+
+const (
+	start = "###START#"
+	end   = "###END"
+)
 
 func Republisher(server string, port int, topic string, message string) {
 	fmt.Println(">> MQTT")
@@ -123,23 +129,36 @@ func Subscription(server string, port int, topic string, host string, destinatio
 }
 
 func ReceiveContents() {
+	var payload strings.Builder
 	scanner := bufio.NewScanner(os.Stdin)
+	initialize, terminate, index := start, end, 0
 
-	// TODO: Handle multiple lines of input.
+	// Includes markers to delimit the message content.
 
 	for scanner.Scan() {
-		payload := scanner.Text()
-		DetectContents(payload)
+		line := scanner.Text()
+
+		if index == 0 {
+			payload.WriteString(initialize)
+		}
+		payload.WriteString(line)
+		payload.WriteString("\n")
+
+		index++
 	}
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println(">> [!] Error reading from stdin: ", err)
 	}
+
+	payload.WriteString(terminate)
+
+	DetectContents(payload.String(), index)
 }
 
-func DetectContents(message string) {
+func DetectContents(message string, counter int) {
 	complete := Message{
-		Index:    42,
+		Metadata: counter,
 		Topic:    "diode/example/stream",
 		Payload:  message,
 		Checksum: Verification(message),
