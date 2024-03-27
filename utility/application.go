@@ -2,7 +2,6 @@ package utility
 
 import (
 	"fmt"
-	"math/rand"
 	"net"
 	"time"
 )
@@ -10,16 +9,15 @@ import (
 const (
 	ACKNOWLEDGEMENT = "OK\r\n"
 	CONN_TYPE       = "tcp"
-	MAX_ATTEMPTS    = 42
+	MAX_ATTEMPTS    = 2
 	CHUNK_SIZE      = 1460  // ? Characters
 	SAMPLE          = 10240 // 10 Kbytes
 )
 
 func StartPlaceholderClient(host string, port int) {
-	upperBound := rand.Intn(1) + 1
 
-	for i := 1; i <= upperBound; i++ {
-		fmt.Printf(">> [%d of %d] Dialing host %s on port %d via %s...\n", i, upperBound, host, port, CONN_TYPE)
+	for i := 1; i <= MAX_ATTEMPTS; i++ {
+		fmt.Printf(">> [%d of %d] Dialing host %s on port %d via %s...\n", i, MAX_ATTEMPTS, host, port, CONN_TYPE)
 	}
 
 	conn, err := net.Dial(CONN_TYPE, fmt.Sprintf("%s:%d", host, port))
@@ -71,8 +69,6 @@ func StartPlaceholderClient(host string, port int) {
 
 		time.Sleep(1 * time.Second)
 	}
-
-	_, err = conn.Write([]byte(message))
 
 	buffer := make([]byte, SAMPLE)
 

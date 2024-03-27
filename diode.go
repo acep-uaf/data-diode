@@ -139,6 +139,26 @@ func main() {
 				},
 			},
 			{
+				Name:    "mqtt-subscribe",
+				Aliases: []string{"ms"},
+				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
+				Action: func(msCtx *cli.Context) error {
+					fmt.Println("----- MQTT SUBSCRIBE -----")
+					utility.EncapsulatePayloadMessage()
+					return nil
+				},
+			},
+			{
+				Name:    "mqtt-publish",
+				Aliases: []string{"mp"},
+				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
+				Action: func(mpCtx *cli.Context) error {
+					fmt.Println("----- MQTT PUBLISH -----")
+					utility.PublishPayload()
+					return nil
+				},
+			},
+			{
 				Name:    "version",
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",

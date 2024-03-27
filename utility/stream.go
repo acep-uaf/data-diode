@@ -177,6 +177,19 @@ func Subscription(server string, port int, topic string, host string, destinatio
 	client.Disconnect(250) // ms
 }
 
+func EncapsulatePayloadMessage() {
+	fmt.Println(">> Subscribing to MQTT broker...")
+}
+
+func DetectCompleteMessage() {
+	fmt.Println(">> Detecting complete message...")
+}
+
+func PublishPayload() {
+	DetectCompleteMessage()
+	fmt.Println(">> Publishing to MQTT broker...")
+}
+
 func Verification(data string) string {
 	hash := md5.New()
 	hash.Write([]byte(data))
