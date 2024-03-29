@@ -59,10 +59,10 @@ func main() {
 
 	diodeInputSideIP := config.Input.IP
 	diodePassthroughPort := config.Input.Port
+	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
+
 	targetServerIP := config.Output.IP
 	targetServerPort := config.Output.Port
-
-	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
 	serverLocation := fmt.Sprintf("%s:%d", targetServerIP, targetServerPort)
 
 	mqttBrokerIP := config.Broker.Server
@@ -107,7 +107,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
+					analysis.Pong()
 					return nil
 				},
 			},
@@ -127,7 +127,6 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					analysis.Pong()
 					return nil
 				},
 			},

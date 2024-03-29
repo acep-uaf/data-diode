@@ -16,15 +16,32 @@ const (
 )
 
 func SendMessage(input string, client string) {
-	conn, err := net.Dial("tcp", client)
+	conn, err := net.Dial(CONN_TYPE, client)
 	if err != nil {
 		log.Fatalf(">> [!] Error connecting to diode client: %v", err)
 	}
 	defer conn.Close()
 
-	_, err = conn.Write([]byte(input))
-	if err != nil {
-		log.Fatalf(">> [!] Failed to write to diode client: %v", err)
+	for index := 0; index < len(input); index += CHUNK_SIZE {
+		chunk := input[index:min(index+CHUNK_SIZE, len(input))]
+
+		_, err := conn.Write([]byte(chunk))
+		if err != nil {
+			log.Fatalf(">> [!] Error sending data: %v", err)
+		}
+
+		response := make([]byte, len(ACKNOWLEDGEMENT))
+		_, err = conn.Read(response)
+		if err != nil {
+			log.Fatalf(">> [!] Error receiving ACK: %v", err)
+		}
+
+		if string(response) != ACKNOWLEDGEMENT {
+			log.Fatalf(">> [?] Invalid ACK received.")
+		}
+
+		marker := time.Now().UTC().Format(time.RFC3339Nano)
+		fmt.Printf(">> [%s] %s\n", marker, chunk)
 	}
 }
 
@@ -44,45 +61,7 @@ func StartPlaceholderClient(host string, port int) {
 
 	message := "The quick brown fox jumps over the lazy dog.\n"
 
-	for try := 1; try <= MAX_ATTEMPTS; try++ {
-		if len(message) > CHUNK_SIZE {
-			index := 0
-
-			for index < len(message) {
-				chunk := message[index : index+CHUNK_SIZE]
-
-				// I. Send Chunk
-
-				_, err := conn.Write([]byte(chunk))
-				if err != nil {
-					fmt.Println(">> [!] Error sending data: ", err)
-					return
-				}
-
-				// II. Wait for ACK
-
-				response := make([]byte, 4)
-				_, err = conn.Read(response)
-				if err != nil {
-					fmt.Println(">> [!] Error receiving ACK: ", err)
-					return
-				}
-
-				// III. Diode Response
-
-				if string(response) != ACKNOWLEDGEMENT {
-					fmt.Println(">> [?] Invalid ACK received.")
-					return
-				}
-
-				fmt.Printf(">> Successfully sent message to diode: %s\n", chunk)
-
-				index += CHUNK_SIZE
-			}
-		}
-
-		time.Sleep(1 * time.Second)
-	}
+	RecieveMessage(message, conn)
 
 	buffer := make([]byte, SAMPLE)
 
@@ -93,6 +72,43 @@ func StartPlaceholderClient(host string, port int) {
 	}
 
 	fmt.Printf(">> Server response: %s\n", string(buffer[:bytesRead]))
+}
+
+func RecieveMessage(message string, conn net.Conn) bool {
+	for try := 1; try <= MAX_ATTEMPTS; try++ {
+		if len(message) > CHUNK_SIZE {
+			index := 0
+
+			for index < len(message) {
+				chunk := message[index : index+CHUNK_SIZE]
+
+				_, err := conn.Write([]byte(chunk))
+				if err != nil {
+					fmt.Println(">> [!] Error sending data: ", err)
+					return true
+				}
+
+				response := make([]byte, 4)
+				_, err = conn.Read(response)
+				if err != nil {
+					fmt.Println(">> [!] Error receiving ACK: ", err)
+					return true
+				}
+
+				if string(response) != ACKNOWLEDGEMENT {
+					fmt.Println(">> [?] Invalid ACK received.")
+					return true
+				}
+
+				fmt.Printf(">> Successfully sent message to diode: %s\n", chunk)
+
+				index += CHUNK_SIZE
+			}
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+	return false
 }
 
 func StartPlaceholderServer(host string, port int) {
@@ -141,15 +157,4 @@ func StartPlaceholderServer(host string, port int) {
 			}
 		}(conn)
 	}
-}
-
-func RecieveMessage(client net.Conn) string {
-	buffer := make([]byte, SAMPLE)
-
-	bytesRead, err := client.Read(buffer)
-	if err != nil {
-		log.Fatalf(">> [!] Error reading response: %v", err)
-	}
-
-	return string(buffer[:bytesRead])
 }

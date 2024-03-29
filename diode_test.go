@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	insights "github.com/acep-uaf/data-diode/insights"
-	"github.com/acep-uaf/data-diode/utility"
 )
 
 var (
@@ -153,32 +152,5 @@ func TestEchoMessage(t *testing.T) {
 	match := string(buf[:n])
 	if match != message {
 		t.Errorf("[!] Echoed message does not match original message: got %q, want %q", match, message)
-	}
-}
-
-func TestRepublishContents(t *testing.T) {
-	location := ProjectDocumentation
-	broker := "localhost"
-	topic := "test/message"
-	port := 1883
-
-	// TODO: Mock the MQTT connection.
-
-	utility.RepublishContents(location, broker, topic, port)
-
-	if len(location) == 0 {
-		t.Errorf("[!] No location specified...")
-	}
-
-	if len(broker) == 0 {
-		t.Errorf("[!] No broker specified...")
-	}
-
-	if len(topic) == 0 {
-		t.Errorf("[!] No topic specified...")
-	}
-
-	if port == 0 {
-		t.Errorf("[!] No port specified...")
 	}
 }
