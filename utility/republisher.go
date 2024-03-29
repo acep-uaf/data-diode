@@ -55,19 +55,16 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 }
 
 func OutboundMessageFlow(server string, port int, topic string, destination string) {
-	example := "Hello, world!"
-	specificity := "diode/example"
+	example, err := RecieveMessage(destination)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	fmt.Println("Original: ", example)
-	// TODO: Detect a complete message and decode the payload.
+	// TODO: Detect, decode, and unencapsulate the message before publishing.
 
-	encoded := EncapsulatePayload(example)
-	decoded := UnencapsulatePayload(encoded)
-
-	fmt.Println("Encoded: ", encoded)
-	fmt.Println("Decoded: ", decoded)
-
-	PublishPayload(server, port, specificity, decoded)
+	specificity := "diode/telemetry"
+	PublishPayload(server, port, specificity, example)
 }
 
 func DetectContents(message string, topic string) string {

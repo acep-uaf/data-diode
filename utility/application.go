@@ -159,11 +159,11 @@ func StartPlaceholderServer(host string, port int) {
 	}
 }
 
-func RecieveMessage(destination string) {
+func RecieveMessage(destination string) (string, error) {
 	server, err := net.Listen("tcp", destination)
 	if err != nil {
 		fmt.Println(">> [!] Error connecting to diode: ", err)
-		return
+		return "", err
 	}
 	defer server.Close()
 
@@ -173,27 +173,33 @@ func RecieveMessage(destination string) {
 		conn, err := server.Accept()
 		if err != nil {
 			fmt.Println(">> [!] Error accepting connection: ", err)
-			return
+			continue
 		}
 
 		fmt.Println(">> Server accepted connection from: ", conn.RemoteAddr())
 
-		connectionHandler(conn)
+		message, err := connectionHandler(conn)
+		if err != nil {
+			fmt.Println(">> [!] Error handling connection: ", err)
+			break
+		}
+
+		return message, nil
 	}
+
+	return "", nil
 }
 
-func connectionHandler(conn net.Conn) {
+func connectionHandler(conn net.Conn) (string, error) {
 	defer conn.Close()
 
 	buffer := make([]byte, SAMPLE)
 
-	for {
-		bytesRead, err := conn.Read(buffer)
-		if err != nil {
-			fmt.Println(">> [!] Error reading data: ", err)
-			return
-		}
-
-		fmt.Printf(">> Received data: %s\n", string(buffer[:bytesRead]))
+	bytesRead, err := conn.Read(buffer)
+	if err != nil {
+		fmt.Println(">> [!] Error reading data: ", err)
+		return "", err
 	}
+
+	return string(buffer[:bytesRead]), nil
 }
