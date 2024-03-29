@@ -62,6 +62,9 @@ func main() {
 	targetServerIP := config.Output.IP
 	targetServerPort := config.Output.Port
 
+	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
+	serverLocation := fmt.Sprintf("%s:%d", targetServerIP, targetServerPort)
+
 	mqttBrokerIP := config.Broker.Server
 	mqttBrokerPort := config.Broker.Port
 	mqttBrokerTopic := config.Broker.Topic
@@ -133,7 +136,7 @@ func main() {
 				Aliases: []string{"ms"},
 				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
+					utility.InboundMessageFlow(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, clientLocation)
 					return nil
 				},
 			},
@@ -142,7 +145,7 @@ func main() {
 				Aliases: []string{"mp"},
 				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
 				Action: func(mpCtx *cli.Context) error {
-					utility.EncapsulateContents()
+					utility.OutboundMessageFlow(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, serverLocation)
 					return nil
 				},
 			},

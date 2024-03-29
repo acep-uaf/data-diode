@@ -2,6 +2,7 @@ package utility
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -13,6 +14,19 @@ const (
 	CHUNK_SIZE      = 1460  // ? Characters
 	SAMPLE          = 10240 // 10 Kbytes
 )
+
+func SendMessage(input string, client string) {
+	conn, err := net.Dial("tcp", client)
+	if err != nil {
+		log.Fatalf(">> [!] Error connecting to diode client: %v", err)
+	}
+	defer conn.Close()
+
+	_, err = conn.Write([]byte(input))
+	if err != nil {
+		log.Fatalf(">> [!] Failed to write to diode client: %v", err)
+	}
+}
 
 func StartPlaceholderClient(host string, port int) {
 
@@ -114,6 +128,7 @@ func StartPlaceholderServer(host string, port int) {
 						fmt.Println(">> Connection closed by client.")
 						return
 					}
+					return
 				}
 
 				fmt.Printf(">> Received data: %s\n", string(data[:bytesRead]))
@@ -126,4 +141,15 @@ func StartPlaceholderServer(host string, port int) {
 			}
 		}(conn)
 	}
+}
+
+func RecieveMessage(client net.Conn) string {
+	buffer := make([]byte, SAMPLE)
+
+	bytesRead, err := client.Read(buffer)
+	if err != nil {
+		log.Fatalf(">> [!] Error reading response: %v", err)
+	}
+
+	return string(buffer[:bytesRead])
 }

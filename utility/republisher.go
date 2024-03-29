@@ -1,14 +1,13 @@
 package utility
 
 import (
-	"bufio"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -21,28 +20,22 @@ type Message struct {
 }
 
 const (
-	start   = "###START"
-	end     = "###END"
-	delimit = false
+	start = "###START"
+	end   = "###END"
 )
 
-var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	DetectContents(string(msg.Payload()), msg.Topic())
-}
-
-func Republisher(server string, port int, topic string) {
+func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
 	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("diode_republisher")
-	opts.SetDefaultPublishHandler(messageHandler)
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(">> [!] Failed to connect to the broker: ", token.Error())
 	}
 
-	// Callback Function (Incoming Messages)
 	handleMessage := func(client mqtt.Client, msg mqtt.Message) {
-		DetectContents(string(msg.Payload()), msg.Topic())
+		contents := DetectContents(string(msg.Payload()), msg.Topic())
+		SendMessage(contents, arrival)
 	}
 
 	// Subscription (Topic)
@@ -61,23 +54,11 @@ func Republisher(server string, port int, topic string) {
 	client.Disconnect(250) // ms
 }
 
-func EncapsulateContents() {
-	scanner := bufio.NewScanner(os.Stdin)
-	var line strings.Builder
-
-	// ! Standard Input (Multiple Lines)
-
-	for scanner.Scan() {
-		payload := scanner.Text()
-		line.WriteString(payload)
-	}
-
-	DetectContents(line.String(), "stdin")
+func OutboundMessageFlow(server string, port int, topic string, destination string) {
+	fmt.Println(">> Starting the outbound connection...")
 }
 
-func DetectContents(message string, topic string) {
-	initialize, terminate := start, end
-
+func DetectContents(message string, topic string) string {
 	complete := Message{
 		Topic:    topic,
 		Length:   len(message),
@@ -87,15 +68,12 @@ func DetectContents(message string, topic string) {
 
 	jsonPackage, err := json.Marshal(complete)
 	if err != nil {
-		fmt.Println(">> [!] Error marshalling the message: ", err)
-		return
+		log.Fatalf(">> [!] Error marshalling the message: %v", err)
 	}
 
-	if delimit == true {
-		fmt.Println(initialize + string(jsonPackage) + terminate)
-	} else {
-		fmt.Println(string(jsonPackage))
-	}
+	delimited := start + string(jsonPackage) + end
+
+	return delimited
 }
 
 func EncapsulatePayload(message string) string {
