@@ -55,7 +55,19 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 }
 
 func OutboundMessageFlow(server string, port int, topic string, destination string) {
-	fmt.Println(">> Starting the outbound connection...")
+	example := "Hello, world!"
+	specificity := "diode/example"
+
+	fmt.Println("Original: ", example)
+	// TODO: Detect a complete message and decode the payload.
+
+	encoded := EncapsulatePayload(example)
+	decoded := UnencapsulatePayload(encoded)
+
+	fmt.Println("Encoded: ", encoded)
+	fmt.Println("Decoded: ", decoded)
+
+	PublishPayload(server, port, specificity, decoded)
 }
 
 func DetectContents(message string, topic string) string {
@@ -81,19 +93,30 @@ func EncapsulatePayload(message string) string {
 	return encoded
 }
 
-func UnencapsulatePayload(message string) {
+func UnencapsulatePayload(message string) string {
 	// TODO: Test case(s) for various message lengths and content.
 
 	decoded, err := base64.StdEncoding.DecodeString(message)
 	if err != nil {
 		fmt.Println(">> [!] Error decoding the message: ", err)
-		return
 	}
-	fmt.Println(">> Decoded message: ", string(decoded))
+	return string(decoded)
 }
 
-func PublishPayload(message string) {
-	fmt.Println(">> Publishing to MQTT broker...")
+func PublishPayload(server string, port int, topic string, message string) {
+	location := fmt.Sprintf("tcp://%s:%d", server, port)
+	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("diode_republisher")
+
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		fmt.Println(">> [!] Failed to connect to the broker: ", token.Error())
+	}
+
+	if token := client.Publish(topic, 0, false, message); token.Wait() && token.Error() != nil {
+		fmt.Println(">> [!] Error publishing the message: ", token.Error())
+	}
+
+	client.Disconnect(250)
 }
 
 func Verification(data string) string {

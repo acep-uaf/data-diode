@@ -61,7 +61,7 @@ func StartPlaceholderClient(host string, port int) {
 
 	message := "The quick brown fox jumps over the lazy dog.\n"
 
-	RecieveMessage(message, conn)
+	ProcessMessage(message, conn)
 
 	buffer := make([]byte, SAMPLE)
 
@@ -74,7 +74,7 @@ func StartPlaceholderClient(host string, port int) {
 	fmt.Printf(">> Server response: %s\n", string(buffer[:bytesRead]))
 }
 
-func RecieveMessage(message string, conn net.Conn) bool {
+func ProcessMessage(message string, conn net.Conn) bool {
 	for try := 1; try <= MAX_ATTEMPTS; try++ {
 		if len(message) > CHUNK_SIZE {
 			index := 0
@@ -156,5 +156,44 @@ func StartPlaceholderServer(host string, port int) {
 				}
 			}
 		}(conn)
+	}
+}
+
+func RecieveMessage(destination string) {
+	server, err := net.Listen("tcp", destination)
+	if err != nil {
+		fmt.Println(">> [!] Error connecting to diode: ", err)
+		return
+	}
+	defer server.Close()
+
+	fmt.Println(">> Server listening on: ", server.Addr())
+
+	for {
+		conn, err := server.Accept()
+		if err != nil {
+			fmt.Println(">> [!] Error accepting connection: ", err)
+			return
+		}
+
+		fmt.Println(">> Server accepted connection from: ", conn.RemoteAddr())
+
+		connectionHandler(conn)
+	}
+}
+
+func connectionHandler(conn net.Conn) {
+	defer conn.Close()
+
+	buffer := make([]byte, SAMPLE)
+
+	for {
+		bytesRead, err := conn.Read(buffer)
+		if err != nil {
+			fmt.Println(">> [!] Error reading data: ", err)
+			return
+		}
+
+		fmt.Printf(">> Received data: %s\n", string(buffer[:bytesRead]))
 	}
 }
