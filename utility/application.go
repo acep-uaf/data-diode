@@ -40,8 +40,7 @@ func SendMessage(input string, client string) {
 			log.Fatalf(">> [?] Invalid ACK received.")
 		}
 
-		marker := time.Now().UTC().Format(time.RFC3339Nano)
-		fmt.Printf(">> [%s] %s\n", marker, chunk)
+		fmt.Println(chunk)
 	}
 }
 

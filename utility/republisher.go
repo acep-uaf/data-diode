@@ -8,21 +8,18 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Message struct {
-	Topic    string
-	Length   int
-	Payload  string
-	Checksum string
+	Time     int    `json:"time"`
+	Topic    string `json:"topic"`
+	Length   int    `json:"length"`
+	Payload  string `json:"payload"`
+	Checksum string `json:"checksum"`
 }
-
-const (
-	start = "###START"
-	end   = "###END"
-)
 
 func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
@@ -69,6 +66,7 @@ func OutboundMessageFlow(server string, port int, topic string, destination stri
 
 func DetectContents(message string, topic string) string {
 	complete := Message{
+		Time:     int(MakeTimestamp()),
 		Topic:    topic,
 		Length:   len(message),
 		Payload:  EncapsulatePayload(message),
@@ -80,9 +78,7 @@ func DetectContents(message string, topic string) string {
 		log.Fatalf(">> [!] Error marshalling the message: %v", err)
 	}
 
-	delimited := start + string(jsonPackage) + end
-
-	return delimited
+	return string(jsonPackage)
 }
 
 func EncapsulatePayload(message string) string {
@@ -114,6 +110,10 @@ func PublishPayload(server string, port int, topic string, message string) {
 	}
 
 	client.Disconnect(250)
+}
+
+func MakeTimestamp() int64 {
+	return time.Now().UnixMilli()
 }
 
 func Verification(data string) string {
