@@ -133,7 +133,7 @@ func main() {
 				Aliases: []string{"ms"},
 				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
-					utility.EncapsulateContents()
+					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
 					return nil
 				},
 			},
@@ -142,7 +142,7 @@ func main() {
 				Aliases: []string{"mp"},
 				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
 				Action: func(mpCtx *cli.Context) error {
-					utility.Republisher(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic)
+					utility.EncapsulateContents()
 					return nil
 				},
 			},

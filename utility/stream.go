@@ -14,15 +14,16 @@ import (
 )
 
 type Message struct {
-	Metadata int
 	Topic    string
+	Length   int
 	Payload  string
 	Checksum string
 }
 
 const (
-	start = "###START#"
-	end   = "###END"
+	start   = "###START"
+	end     = "###END"
+	delimit = false
 )
 
 var messageHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -61,26 +62,26 @@ func Republisher(server string, port int, topic string) {
 }
 
 func EncapsulateContents() {
-	scanner := bufio.NewScanner(os.Stdin) // Standard Input
-	var line strings.Builder              // Multiple Lines
-	initialize, terminate := start, end   // Delimiters
-	line.WriteString(initialize)
+	scanner := bufio.NewScanner(os.Stdin)
+	var line strings.Builder
+
+	// ! Standard Input (Multiple Lines)
 
 	for scanner.Scan() {
 		payload := scanner.Text()
 		line.WriteString(payload)
-		line.WriteString("\n")
 	}
 
-	line.WriteString(terminate)
 	DetectContents(line.String(), "stdin")
 }
 
 func DetectContents(message string, topic string) {
+	initialize, terminate := start, end
+
 	complete := Message{
-		Metadata: len(message),
 		Topic:    topic,
-		Payload:  message,
+		Length:   len(message),
+		Payload:  EncapsulatePayload(message),
 		Checksum: Verification(message),
 	}
 
@@ -90,7 +91,11 @@ func DetectContents(message string, topic string) {
 		return
 	}
 
-	fmt.Println(string(jsonPackage))
+	if delimit == true {
+		fmt.Println(initialize + string(jsonPackage) + terminate)
+	} else {
+		fmt.Println(string(jsonPackage))
+	}
 }
 
 func EncapsulatePayload(message string) string {
