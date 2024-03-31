@@ -46,9 +46,6 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
-
-	client.Unsubscribe(topic)
-	client.Disconnect(250) // ms
 }
 
 func OutboundMessageFlow(server string, port int, topic string, destination string) {

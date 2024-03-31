@@ -20,6 +20,7 @@ import (
 
 var (
 	SemVer         string
+	BuildInfo      string
 	ConfigSettings = "config/settings.yaml"
 	InputTextFile  = "docs/example.txt"
 )
@@ -153,7 +154,8 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version " + SemVer)
+					fmt.Println(">> diode version:", SemVer)
+					fmt.Println(">> build information: ", BuildInfo)
 					return nil
 				},
 			},

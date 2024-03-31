@@ -1,11 +1,19 @@
+BIN_NAME=diode
+BIN_VERSION=0.1.0
+BIN_DATE=$(shell date +%FT%T%z)
+
 all: build
 
 build:
-	go build -o diode -ldflags="-X main.SemVer=0.1.0" diode.go
+	go build -o ${BIN_NAME} -ldflags="-X 'main.SemVer=${BIN_VERSION}' -X 'main.BuildInfo=${BIN_DATE}'"
 
 test:
 	go test -v ./...
 
-run:
-	go run diode.go
+run: build
+	./${BIN_NAME} --help
+
+clean:
+	go clean
+	rm ${BIN_NAME}
 
