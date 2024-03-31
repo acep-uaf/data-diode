@@ -13,17 +13,24 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type Message struct {
-	Time     int    `json:"time"`
-	Topic    string `json:"topic"`
-	Length   int    `json:"length"`
-	Payload  string `json:"payload"`
-	Checksum string `json:"checksum"`
+type InputDiodeMessage struct {
+	Time       int    `json:"time"`
+	Topic      string `json:"topic"`
+	B64Payload string `json:"b64payload"`
+}
+
+type OutputDiodeMessage struct {
+	Time       int    `json:"time"`
+	Topic      string `json:"topic"`
+	B64Payload string `json:"b64payload"`
+	Payload    string `json:"payload"`
+	Length     int    `json:"length"`
+	Checksum   string `json:"checksum"`
 }
 
 func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
-	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("diode_republisher")
+	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("in_rec_msg")
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
@@ -62,12 +69,10 @@ func OutboundMessageFlow(server string, port int, topic string, destination stri
 }
 
 func DetectContents(message string, topic string) string {
-	complete := Message{
-		Time:     int(MakeTimestamp()),
-		Topic:    topic,
-		Length:   len(message),
-		Payload:  EncapsulatePayload(message),
-		Checksum: Verification(message),
+	complete := InputDiodeMessage{
+		Time:       int(MakeTimestamp()),
+		Topic:      topic,
+		B64Payload: EncapsulatePayload(message),
 	}
 
 	jsonPackage, err := json.Marshal(complete)

@@ -26,20 +26,29 @@ var (
 )
 
 type Configuration struct {
-	Input struct {
-		IP      string
-		Port    int
-		Timeout int
+	Diode struct {
+		Input struct {
+			IP      string
+			Port    int
+			Timeout int
+		}
+		Output struct {
+			IP   string
+			Port int
+			TLS  bool
+		}
 	}
-	Output struct {
-		IP   string
-		Port int
-		TLS  bool
-	}
-	Broker struct {
-		Server string
-		Port   int
-		Topic  string
+	MQTT struct {
+		Inside struct {
+			Server string
+			Port   int
+			Topic  string
+		}
+		Outside struct {
+			Server      string
+			Port        int
+			TopicPrefix string
+		}
 	}
 }
 
@@ -58,17 +67,21 @@ func main() {
 
 	// Configuration Settings
 
-	diodeInputSideIP := config.Input.IP
-	diodePassthroughPort := config.Input.Port
+	diodeInputSideIP := config.Diode.Input.IP
+	diodePassthroughPort := config.Diode.Input.Port
 	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
 
-	targetServerIP := config.Output.IP
-	targetServerPort := config.Output.Port
+	targetServerIP := config.Diode.Output.IP
+	targetServerPort := config.Diode.Output.Port
 	serverLocation := fmt.Sprintf("%s:%d", targetServerIP, targetServerPort)
 
-	mqttBrokerIP := config.Broker.Server
-	mqttBrokerPort := config.Broker.Port
-	mqttBrokerTopic := config.Broker.Topic
+	subBrokerIP := config.MQTT.Inside.Server
+	subBrokerPort := config.MQTT.Inside.Port
+	subBrokerTopic := config.MQTT.Inside.Topic
+
+	pubBrokerIP := config.MQTT.Outside.Server
+	pubBrokerPort := config.MQTT.Outside.Port
+	pubBrokerTopic := config.MQTT.Outside.TopicPrefix
 
 	app := &cli.App{
 		Name:  "diode",
@@ -134,18 +147,18 @@ func main() {
 			{
 				Name:    "mqtt-subscribe",
 				Aliases: []string{"ms"},
-				Usage:   "Recieve payload, encapsulate payload message, & stream to diode",
+				Usage:   "Recieve payload, encapsulate message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
-					utility.InboundMessageFlow(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, clientLocation)
+					utility.InboundMessageFlow(subBrokerIP, subBrokerPort, subBrokerTopic, clientLocation)
 					return nil
 				},
 			},
 			{
 				Name:    "mqtt-publish",
 				Aliases: []string{"mp"},
-				Usage:   "Recieve stream (stdin), detect complete message, decode the payload, & publish the payload",
+				Usage:   "Detect complete message, decode, & republish the payload",
 				Action: func(mpCtx *cli.Context) error {
-					utility.OutboundMessageFlow(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, serverLocation)
+					utility.OutboundMessageFlow(pubBrokerIP, pubBrokerPort, pubBrokerTopic, serverLocation)
 					return nil
 				},
 			},
