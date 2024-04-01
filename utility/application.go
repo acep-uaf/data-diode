@@ -158,15 +158,13 @@ func StartPlaceholderServer(host string, port int) {
 	}
 }
 
-func RecieveMessage(destination string) (string, error) {
+func RecieveMessage(destination string, messages chan<- string) error {
 	server, err := net.Listen("tcp", destination)
 	if err != nil {
 		fmt.Println(">> [!] Error connecting to diode: ", err)
-		return "", err
+		return err
 	}
 	defer server.Close()
-
-	fmt.Println(">> Server listening on: ", server.Addr())
 
 	for {
 		conn, err := server.Accept()
@@ -175,18 +173,16 @@ func RecieveMessage(destination string) (string, error) {
 			continue
 		}
 
-		fmt.Println(">> Server accepted connection from: ", conn.RemoteAddr())
+		go func(conn net.Conn) {
+			message, err := connectionHandler(conn)
+			if err != nil {
+				fmt.Println(">> [!] Error handling connection: ", err)
+				return
+			}
 
-		message, err := connectionHandler(conn)
-		if err != nil {
-			fmt.Println(">> [!] Error handling connection: ", err)
-			break
-		}
-
-		return message, nil
+			messages <- message
+		}(conn)
 	}
-
-	return "", nil
 }
 
 func connectionHandler(conn net.Conn) (string, error) {

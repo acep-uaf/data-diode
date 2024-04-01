@@ -16,5 +16,5 @@ mqtt:
   outside:
     server: "localhost"
     port: 1883
-    topic-prefix: ""
+    prefix: "diode"
     # Avoid namespace collisions

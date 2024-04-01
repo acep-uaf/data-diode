@@ -45,9 +45,9 @@ type Configuration struct {
 			Topic  string
 		}
 		Outside struct {
-			Server      string
-			Port        int
-			TopicPrefix string
+			Server string
+			Port   int
+			Prefix string
 		}
 	}
 }
@@ -81,7 +81,7 @@ func main() {
 
 	pubBrokerIP := config.MQTT.Outside.Server
 	pubBrokerPort := config.MQTT.Outside.Port
-	pubBrokerTopic := config.MQTT.Outside.TopicPrefix
+	pubBrokerTopic := config.MQTT.Outside.Prefix
 
 	app := &cli.App{
 		Name:  "diode",

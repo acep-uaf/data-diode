@@ -56,16 +56,19 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 }
 
 func OutboundMessageFlow(server string, port int, topic string, destination string) {
-	example, err := RecieveMessage(destination)
-	if err != nil {
-		fmt.Println(err)
-		return
+	messages := make(chan string)
+	go func() {
+		err := RecieveMessage(destination, messages)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}()
+
+	for message := range messages {
+		repackaged := RepackageContents(message, topic)
+		PublishPayload(server, port, topic, repackaged)
 	}
-
-	// TODO: Detect, decode, and unencapsulate the message before publishing.
-
-	specificity := "diode/telemetry"
-	PublishPayload(server, port, specificity, example)
 }
 
 func DetectContents(message string, topic string) string {
@@ -77,10 +80,35 @@ func DetectContents(message string, topic string) string {
 
 	jsonPackage, err := json.Marshal(complete)
 	if err != nil {
-		log.Fatalf(">> [!] Error marshalling the message: %v", err)
+		log.Fatalf(">> [!] Error marshalling the incoming message: %v", err)
 	}
 
 	return string(jsonPackage)
+}
+
+func RepackageContents(message string, topic string) string {
+	var intermediary OutputDiodeMessage
+	err := json.Unmarshal([]byte(message), &intermediary)
+	if err != nil {
+		log.Fatalf(">> [!] Error unmarshalling the message: %v", err)
+	}
+
+	// Diode Metadata
+	intermediary.Time = int(MakeTimestamp())
+	intermediary.Topic = topic
+	intermediary.Payload = UnencapsulatePayload(intermediary.B64Payload)
+	intermediary.Length = len(intermediary.Payload)
+	intermediary.Checksum = Verification(intermediary.Payload)
+
+	// Process Contents
+	jsonIntermediary, err := json.Marshal(intermediary)
+	if err != nil {
+		log.Fatalf(">> [!] Error marshalling the outgoing message: %v", err)
+	}
+
+	fmt.Println(string(jsonIntermediary))
+
+	return string(intermediary.Payload)
 }
 
 func EncapsulatePayload(message string) string {
@@ -100,7 +128,7 @@ func UnencapsulatePayload(message string) string {
 
 func PublishPayload(server string, port int, topic string, message string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
-	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("diode_republisher")
+	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("out_rev_string")
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
@@ -110,8 +138,6 @@ func PublishPayload(server string, port int, topic string, message string) {
 	if token := client.Publish(topic, 0, false, message); token.Wait() && token.Error() != nil {
 		fmt.Println(">> [!] Error publishing the message: ", token.Error())
 	}
-
-	client.Disconnect(250)
 }
 
 func MakeTimestamp() int64 {
