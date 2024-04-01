@@ -39,14 +39,12 @@ Scripts for verifying TCP passthrough functionality.
 5 directories, 8 files
 ```
 
-#### Architecture Diagram (WIP)
+#### Architecture Diagram
 
 ```mermaid
 graph LR
-    A("Publish (MQTT)") --> B(TCP Client)
-    B --> C(Data Diode)
-    C --> D(TCP Server)
-    D --> E("Subscribe (MQTT)")
+    A("Subscribe (MQTT)") -->|TCP Client|B(Data Diode) -->|TCP Server|C("Publish (MQTT)")
+
 ```
 
 > [!NOTE]

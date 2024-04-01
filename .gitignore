@@ -22,3 +22,6 @@ go.work
 
 # Input source → experimental results
 *.txt
+
+# Output binary
+diode
