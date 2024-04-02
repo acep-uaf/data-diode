@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	analysis "github.com/acep-uaf/data-diode/insights"
 	utility "github.com/acep-uaf/data-diode/utility"
@@ -21,57 +20,35 @@ import (
 
 var (
 	SemVer         string
+	BuildInfo      string
 	ConfigSettings = "config/settings.yaml"
 	InputTextFile  = "docs/example.txt"
 )
 
 type Configuration struct {
-	Input struct {
-		IP      string
-		Port    int
-		Timeout int
+	Diode struct {
+		Input struct {
+			IP      string
+			Port    int
+			Timeout int
+		}
+		Output struct {
+			IP   string
+			Port int
+			TLS  bool
+		}
 	}
-	Output struct {
-		IP   string
-		Port int
-		TLS  bool
-	}
-	Broker struct {
-		Server string
-		Port   int
-		Topic  string
-	}
-}
-
-func exampleContents(location string) {
-	sample := utility.ReadLineContent(location)
-	utility.PrintFileContent(sample)
-	utility.OutputStatistics(sample)
-}
-
-func republishContents(location string, mqttBrokerIP string, mqttBrokerTopic string, mqttBrokerPort int) {
-	fileContent := utility.ReadLineContent(location)
-
-	fmt.Println(">> Server: ", mqttBrokerIP)
-	fmt.Println(">> Topic: ", mqttBrokerTopic)
-	fmt.Println(">> Port: ", mqttBrokerPort)
-
-	start := time.Now()
-
-	for i := 1; i <= len(fileContent.Lines); i++ {
-		utility.Observability(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, fileContent.Lines[i])
-	}
-
-	t := time.Now()
-
-	elapsed := t.Sub(start)
-
-	if len(fileContent.Lines) == 0 {
-		fmt.Println(">> No message content sent.")
-	} else if len(fileContent.Lines) == 1 {
-		fmt.Println(">> Sent message from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
-	} else {
-		fmt.Println(">> Sent ", len(fileContent.Lines), " messages from ", location, " to topic: ", mqttBrokerTopic, " in ", elapsed)
+	MQTT struct {
+		Inside struct {
+			Server string
+			Port   int
+			Topic  string
+		}
+		Outside struct {
+			Server string
+			Port   int
+			Prefix string
+		}
 	}
 }
 
@@ -90,14 +67,21 @@ func main() {
 
 	// Configuration Settings
 
-	diodeInputSideIP := config.Input.IP
-	diodePassthroughPort := config.Input.Port
-	targetServerIP := config.Output.IP
-	targetServerPort := config.Output.Port
+	diodeInputSideIP := config.Diode.Input.IP
+	diodePassthroughPort := config.Diode.Input.Port
+	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
 
-	mqttBrokerIP := config.Broker.Server
-	mqttBrokerPort := config.Broker.Port
-	mqttBrokerTopic := config.Broker.Topic
+	targetServerIP := config.Diode.Output.IP
+	targetServerPort := config.Diode.Output.Port
+	serverLocation := fmt.Sprintf("%s:%d", targetServerIP, targetServerPort)
+
+	subBrokerIP := config.MQTT.Inside.Server
+	subBrokerPort := config.MQTT.Inside.Port
+	subBrokerTopic := config.MQTT.Inside.Topic
+
+	pubBrokerIP := config.MQTT.Outside.Server
+	pubBrokerPort := config.MQTT.Outside.Port
+	pubBrokerTopic := config.MQTT.Outside.Prefix
 
 	app := &cli.App{
 		Name:  "diode",
@@ -137,7 +121,7 @@ func main() {
 				Usage:   "Testing state synchronization via diode I/O",
 				Action: func(tCtx *cli.Context) error {
 					fmt.Println("----- TEST -----")
-					utility.RepublishContents(InputTextFile, mqttBrokerIP, mqttBrokerTopic, mqttBrokerPort)
+					analysis.Pong()
 					return nil
 				},
 			},
@@ -157,17 +141,24 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					analysis.Pong()
 					return nil
 				},
 			},
 			{
-				Name:    "mqtt",
-				Aliases: []string{"m"},
-				Usage:   "MQTT → TCP stream demo",
-				Action: func(mCtx *cli.Context) error {
-					fmt.Println("----- MQTT -----")
-					utility.Subscription(mqttBrokerIP, mqttBrokerPort, mqttBrokerTopic, targetServerIP, targetServerPort)
+				Name:    "mqtt-subscribe",
+				Aliases: []string{"ms"},
+				Usage:   "Recieve payload, encapsulate message, & stream to diode",
+				Action: func(msCtx *cli.Context) error {
+					utility.InboundMessageFlow(subBrokerIP, subBrokerPort, subBrokerTopic, clientLocation)
+					return nil
+				},
+			},
+			{
+				Name:    "mqtt-publish",
+				Aliases: []string{"mp"},
+				Usage:   "Detect complete message, decode, & republish the payload",
+				Action: func(mpCtx *cli.Context) error {
+					utility.OutboundMessageFlow(pubBrokerIP, pubBrokerPort, pubBrokerTopic, serverLocation)
 					return nil
 				},
 			},
@@ -176,7 +167,8 @@ func main() {
 				Aliases: []string{"v"},
 				Usage:   "Print the version of the diode CLI",
 				Action: func(vCtx *cli.Context) error {
-					fmt.Println(">> diode version " + SemVer)
+					fmt.Println(">> diode version:", SemVer)
+					fmt.Println(">> build information: ", BuildInfo)
 					return nil
 				},
 			},

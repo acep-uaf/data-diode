@@ -23,30 +23,27 @@ Scripts for verifying TCP passthrough functionality.
 ```zsh
 .
 ├── config
-├── diode.go
-├── diode_test.go
 ├── docker-compose.yaml
 ├── Dockerfile
 ├── docs
 ├── go.mod
 ├── go.sum
 ├── insights
+├── main.go
 ├── Makefile
 ├── README.md
 ├── sample
 └── utility
 
-5 directories, 8 files
+5 directories, 7 files
 ```
 
-#### Architecture Diagram (WIP)
+#### Architecture Diagram
 
 ```mermaid
 graph LR
-    A("Publish (MQTT)") --> B(TCP Client)
-    B --> C(Data Diode)
-    C --> D(TCP Server)
-    D --> E("Subscribe (MQTT)")
+    A("Subscribe (MQTT)") -->|TCP Client|B(Data Diode) -->|TCP Server|C("Publish (MQTT)")
+
 ```
 
 > [!NOTE]
