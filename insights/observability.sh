@@ -2,7 +2,7 @@
 
 START=`date +%Y-%m-%d-%k:%m:%S`
 COLLECTION=`date +%Y-%m-%d`
-LOGFILE="insights/ACEP_CAMIO_SEDOID_RESULTS-${COLLECTION}.txt"
+LOGFILE="insights/DIODE_RESULTS-${COLLECTION}.txt"
 
 function log() {
     echo "diode: $@"

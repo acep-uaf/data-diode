@@ -117,8 +117,6 @@ func EncapsulatePayload(message string) string {
 }
 
 func UnencapsulatePayload(message string) string {
-	// TODO: Test case(s) for various message lengths and content.
-
 	decoded, err := base64.StdEncoding.DecodeString(message)
 	if err != nil {
 		fmt.Println(">> [!] Error decoding the message: ", err)

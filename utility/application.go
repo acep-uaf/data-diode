@@ -10,7 +10,7 @@ import (
 const (
 	ACKNOWLEDGEMENT = "OK\r\n"
 	CONN_TYPE       = "tcp"
-	MAX_ATTEMPTS    = 2
+	MAX_ATTEMPTS    = 8
 	CHUNK_SIZE      = 1460  // ? Characters
 	SAMPLE          = 10240 // 10 Kbytes
 )
