@@ -139,7 +139,7 @@ func PublishPayload(server string, port int, topic string, message string) {
 }
 
 func MakeTimestamp() int64 {
-	return time.Now().UnixMilli()
+	return time.Now().UnixMicro()
 }
 
 func Verification(data string) string {
