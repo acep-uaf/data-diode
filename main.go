@@ -22,7 +22,6 @@ var (
 	SemVer         string
 	BuildInfo      string
 	ConfigSettings = "config/settings.yaml"
-	InputTextFile  = "docs/example.txt"
 )
 
 type Configuration struct {
@@ -141,6 +140,7 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
+					analysis.Saturate()
 					return nil
 				},
 			},

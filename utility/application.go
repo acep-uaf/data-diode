@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 )
 
 const (
 	ACKNOWLEDGEMENT = "OK\r\n"
 	CONN_TYPE       = "tcp"
-	MAX_ATTEMPTS    = 2
 	CHUNK_SIZE      = 1460  // ? Characters
 	SAMPLE          = 10240 // 10 Kbytes
 )
@@ -45,11 +43,6 @@ func SendMessage(input string, client string) {
 }
 
 func StartPlaceholderClient(host string, port int) {
-
-	for i := 1; i <= MAX_ATTEMPTS; i++ {
-		fmt.Printf(">> [%d of %d] Dialing host %s on port %d via %s...\n", i, MAX_ATTEMPTS, host, port, CONN_TYPE)
-	}
-
 	conn, err := net.Dial(CONN_TYPE, fmt.Sprintf("%s:%d", host, port))
 
 	if err != nil {
@@ -73,41 +66,33 @@ func StartPlaceholderClient(host string, port int) {
 	fmt.Printf(">> Server response: %s\n", string(buffer[:bytesRead]))
 }
 
-func ProcessMessage(message string, conn net.Conn) bool {
-	for try := 1; try <= MAX_ATTEMPTS; try++ {
-		if len(message) > CHUNK_SIZE {
-			index := 0
+func ProcessMessage(message string, conn net.Conn) {
+	if len(message) > CHUNK_SIZE {
+		index := 0
 
-			for index < len(message) {
-				chunk := message[index : index+CHUNK_SIZE]
+		for index < len(message) {
+			chunk := message[index : index+CHUNK_SIZE]
 
-				_, err := conn.Write([]byte(chunk))
-				if err != nil {
-					fmt.Println(">> [!] Error sending data: ", err)
-					return true
-				}
-
-				response := make([]byte, 4)
-				_, err = conn.Read(response)
-				if err != nil {
-					fmt.Println(">> [!] Error receiving ACK: ", err)
-					return true
-				}
-
-				if string(response) != ACKNOWLEDGEMENT {
-					fmt.Println(">> [?] Invalid ACK received.")
-					return true
-				}
-
-				fmt.Printf(">> Successfully sent message to diode: %s\n", chunk)
-
-				index += CHUNK_SIZE
+			_, err := conn.Write([]byte(chunk))
+			if err != nil {
+				fmt.Println(">> [!] Error sending data: ", err)
 			}
-		}
 
-		time.Sleep(1 * time.Second)
+			response := make([]byte, 4)
+			_, err = conn.Read(response)
+			if err != nil {
+				fmt.Println(">> [!] Error receiving ACK: ", err)
+			}
+
+			if string(response) != ACKNOWLEDGEMENT {
+				fmt.Println(">> [?] Invalid ACK received.")
+			}
+
+			fmt.Printf(">> Successfully sent message to diode: %s\n", chunk)
+
+			index += CHUNK_SIZE
+		}
 	}
-	return false
 }
 
 func StartPlaceholderServer(host string, port int) {

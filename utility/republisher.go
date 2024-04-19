@@ -117,8 +117,6 @@ func EncapsulatePayload(message string) string {
 }
 
 func UnencapsulatePayload(message string) string {
-	// TODO: Test case(s) for various message lengths and content.
-
 	decoded, err := base64.StdEncoding.DecodeString(message)
 	if err != nil {
 		fmt.Println(">> [!] Error decoding the message: ", err)
@@ -141,7 +139,7 @@ func PublishPayload(server string, port int, topic string, message string) {
 }
 
 func MakeTimestamp() int64 {
-	return time.Now().UnixMilli()
+	return time.Now().UnixMicro()
 }
 
 func Verification(data string) string {
