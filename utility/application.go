@@ -9,8 +9,8 @@ import (
 const (
 	ACKNOWLEDGEMENT = "OK\r\n"
 	CONN_TYPE       = "tcp"
-	CHUNK_SIZE      = 1460  // ? Characters
-	SAMPLE          = 10240 // 10 Kbytes
+	CHUNK_SIZE      = 1460
+	SAMPLE          = 10240
 )
 
 func SendMessage(input string, client string) {

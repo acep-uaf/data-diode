@@ -9,8 +9,8 @@ services:
         source: ./config/mosquitto.conf
         target: /mosquitto/config/mosquitto.conf
     ports:
-      - target: 1883
-        published: 1883
+      - target: 9001
+        published: 9001
         protocol: tcp
         mode: host
   mqtt-client:
@@ -20,7 +20,3 @@ services:
     container_name: sample-client-connection
     depends_on:
       - mqtt-broker
-
-volumes:
-  data:
-    name: "mqtt-benchmark-data"

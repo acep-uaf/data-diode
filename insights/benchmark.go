@@ -21,8 +21,6 @@ func Pong() bool {
 	return true
 }
 
-// Saturate the TCP link to measure overall throughout via MQTT?
-
 func Saturate() {
 	println(">> Data Diode Components")
 }

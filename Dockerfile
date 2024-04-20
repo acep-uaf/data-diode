@@ -6,4 +6,4 @@ FROM golang:alpine
 WORKDIR /cli
 COPY . /cli
 RUN CGO_ENABLED=0 GOOS=linux go build -o diode
-CMD [ "./diode", "mqtt" ]
+CMD [ "./diode", "diagnostics" ]
