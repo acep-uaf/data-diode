@@ -3,9 +3,7 @@ package analysis
 import (
 	"crypto/sha256"
 	"io"
-	"math/rand"
 	"net/http"
-	"time"
 )
 
 func Pong() bool {
@@ -21,6 +19,10 @@ func Pong() bool {
 	println(">> Status: ", resp.Status)
 
 	return true
+}
+
+func Saturate() {
+	println(">> Data Diode Components")
 }
 
 func Checksum() [32]byte {
@@ -43,9 +45,4 @@ func Checksum() [32]byte {
 	hash := sha256.Sum256([]byte(body))
 
 	return hash
-}
-
-func Value() int {
-	randGenerator := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return randGenerator.Intn(100)
 }
