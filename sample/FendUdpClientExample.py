@@ -1,4 +1,7 @@
-""" 
+# Fend TCP and UDP Client/Server Example Python Test Scripts
+# Copyright (c) 2023 Fend Incorporated. All rights reserved.
+
+"""
 This is an example Python script provided to aid in the integration of a Fend Data Diode in a UDP Client/Server application.
 
 For this example a simple socket is extabilshed with the diode's UDP server and a test message is continuously sent to the input side
@@ -11,12 +14,12 @@ a text string 'OK\r\n'. When this ACK is received new data is free to be sent.
 For these scripts to function, the diode will need to be setup in UDP Client/Server mode. In addition, the "Reply with an ACK" option
 must be selected. Please see the user manualon instruction for this setup process.
 
-These scripts will continuously run until aborted. 
+These scripts will continuously run until aborted.
 
 The following is the expected step by step process of what the script does:
 1. The script creates a socket object named "client".
 2. The script enters the sending loop.
-3. This loop will check to see if the data is larger than 1460 bytes. If so, it will get a chunk and send that. 
+3. This loop will check to see if the data is larger than 1460 bytes. If so, it will get a chunk and send that.
 4. The script will then wait for the diode to send its ACK before proceeding.
 5. The loop will continue until all the data has been chunked and transmitted.
 6. The script waits 1 second.
@@ -29,10 +32,10 @@ from time import sleep
 from timeit import default_timer
 
 # Change this to the IP address of your diode's Input Side IP Address.
-diodeInputSideIP = "192.168.1.99" 
+diodeInputSideIP = "192.168.1.99"
 
 # Change this to the Diode UDP Server Port in your diode's Input Side UDP Passthrough Settings.
-diodeUDPPassthroughPort = 50000 
+diodeUDPPassthroughPort = 50000
 
 # create a socket
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -47,12 +50,12 @@ data = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
 try:
     while True:
         # Send data to diode
-        if len(data) > 1460: # If the data you wish to send is larger than 1460 bytes, you need to chunk. 
+        if len(data) > 1460: # If the data you wish to send is larger than 1460 bytes, you need to chunk.
             index = 0
             while index < len(data):
                 # Create chunk of 1460 chars
                 chunk = data[index : index + 1460]
-                
+
                 # Send chunk to the diode's UDP server
                 client.send(chunk.encode())
 
