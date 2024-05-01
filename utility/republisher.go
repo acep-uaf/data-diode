@@ -126,7 +126,7 @@ func UnencapsulatePayload(message string) string {
 
 func PublishPayload(server string, port int, topic string, message string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
-	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("out_rev_string")
+	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("out_rec_string")
 
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {

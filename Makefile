@@ -1,5 +1,5 @@
 BIN_NAME=diode
-BIN_VERSION=0.1.3
+BIN_VERSION=0.1.4
 BIN_DATE=$(shell date +%FT%T%z)
 
 all: build
