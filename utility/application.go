@@ -13,6 +13,13 @@ const (
 	SAMPLE          = 10240
 )
 
+func min(a, b int) int {
+    if a < b {
+        return a
+    }
+    return b
+}
+
 func SendMessage(input string, client string) {
 	conn, err := net.Dial(CONN_TYPE, client)
 	if err != nil {
