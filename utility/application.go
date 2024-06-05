@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ACKNOWLEDGEMENT = "OK\r\n"
+	ACKNOWLEDGEMENT = "" // ! TODO: Local feature flag for data diode simulation testing.
 	CONN_TYPE       = "tcp"
 	CHUNK_SIZE      = 1460
 	SAMPLE          = 10240
@@ -150,7 +150,7 @@ func StartPlaceholderServer(host string, port int) {
 	}
 }
 
-func RecieveMessage(destination string, messages chan<- string) error {
+func ReceiveMessage(destination string, messages chan<- string) error {
 	server, err := net.Listen("tcp", destination)
 	if err != nil {
 		fmt.Println(">> [!] Error connecting to diode: ", err)

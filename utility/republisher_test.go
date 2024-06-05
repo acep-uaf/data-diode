@@ -1,21 +1,26 @@
 package utility
 
-import "testing"
+import (
+	"encoding/base64"
+	"testing"
+	"time"
+)
 
-func TestSubscribe(t *testing.T) {
-	got := "pub"
-	want := "sub"
+func TestPayloadStructure(t *testing.T) {
 
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+	sample := "Hello, world."
+	location := "test"
+
+	message := InputDiodeMessage{
+		Time:       int(time.Now().Unix()),
+		Topic:      location,
+		B64Payload: base64.StdEncoding.EncodeToString([]byte(sample)),
 	}
-}
 
-func TestPublish(t *testing.T) {
-	got := "sub"
-	want := "pub"
+	got := message.B64Payload
+	want := EncapsulatePayload(sample)
 
 	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %v, want %v", got, want)
 	}
 }

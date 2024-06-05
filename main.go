@@ -147,7 +147,7 @@ func main() {
 			{
 				Name:    "mqtt-subscribe",
 				Aliases: []string{"ms"},
-				Usage:   "Recieve payload, encapsulate message, & stream to diode",
+				Usage:   "Receive payload, encapsulate message, & stream to diode",
 				Action: func(msCtx *cli.Context) error {
 					utility.InboundMessageFlow(subBrokerIP, subBrokerPort, subBrokerTopic, clientLocation)
 					return nil

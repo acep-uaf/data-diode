@@ -58,7 +58,7 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 func OutboundMessageFlow(server string, port int, topic string, destination string) {
 	messages := make(chan string)
 	go func() {
-		err := RecieveMessage(destination, messages)
+		err := ReceiveMessage(destination, messages)
 		if err != nil {
 			fmt.Println(err)
 			return
