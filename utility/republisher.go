@@ -55,7 +55,7 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	<-c
 }
 
-func OutboundMessageFlow(server string, port int, topic string, destination string) {
+func OutboundMessageFlow(server string, port int, prefix string, destination string) {
 	messages := make(chan string)
 	go func() {
 		err := RecieveMessage(destination, messages)
@@ -66,8 +66,18 @@ func OutboundMessageFlow(server string, port int, topic string, destination stri
 	}()
 
 	for message := range messages {
-		repackaged := RepackageContents(message, topic)
-		PublishPayload(server, port, topic, repackaged)
+		var msg InputDiodeMessage
+		err := json.Unmarshal([]byte(message), &msg)
+		if err != nil {
+			fmt.Println(">> [!] Error parsing JSON message: ", err)
+			continue
+		}
+
+		// FIXME: Bounds checking for extracted top-level message intent.
+
+		prepend := prefix + "/" + msg.Topic
+		repackaged := RepackageContents(message, prepend)
+		PublishPayload(server, port, prepend, repackaged)
 	}
 }
 
