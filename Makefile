@@ -1,3 +1,5 @@
+.PHONY: all build test run clean
+
 BIN_NAME=diode
 BIN_VERSION=0.2.0
 BIN_DATE=$(shell date +%FT%T%z)

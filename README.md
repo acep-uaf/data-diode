@@ -10,8 +10,7 @@ Scripts for verifying TCP passthrough functionality.
 
 - Clone repository: `gh repo clone acep-uaf/data-diode`
 - Source navigation: `cd data-diode`
-- Build binary: `make`
-    - [`build-essential`](https://packages.ubuntu.com/focal/build-essential)
+- Build binary: [`make`](https://www.gnu.org/software/make/)
 - CLI: `./diode [options...]`
 
 #### Branch Management
