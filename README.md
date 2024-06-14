@@ -30,13 +30,15 @@ Scripts for verifying TCP passthrough functionality.
 ├── go.mod
 ├── go.sum
 ├── insights
+├── LICENSE
 ├── main.go
 ├── Makefile
 ├── README.md
 ├── sample
-└── utility
+├── utility
+└── vendor
 
-5 directories, 7 files
+6 directories, 8 files
 ```
 
 #### Architecture Diagram
