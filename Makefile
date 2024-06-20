@@ -13,6 +13,9 @@ test:
 run: build
 	./${BIN_NAME} --help
 
+certificate:
+	insights/tls-certificate.sh
+
 clean:
 	go clean
 	rm ${BIN_NAME}

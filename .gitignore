@@ -23,5 +23,10 @@ go.work
 # Input source → experimental results
 *.txt
 
+# TLS certificate & key pair
+*.key
+*.pem
+*.crt
+
 # Output binary
 diode

@@ -29,6 +29,7 @@ type Configuration struct {
 		Input struct {
 			IP      string
 			Port    int
+			TLS     bool
 			Timeout int
 		}
 		Output struct {
@@ -68,10 +69,12 @@ func main() {
 
 	diodeInputSideIP := config.Diode.Input.IP
 	diodePassthroughPort := config.Diode.Input.Port
+	diodeTransportLayerSecurity := config.Diode.Input.TLS
 	clientLocation := fmt.Sprintf("%s:%d", diodeInputSideIP, diodePassthroughPort)
 
 	targetServerIP := config.Diode.Output.IP
 	targetServerPort := config.Diode.Output.Port
+	targetTransportLayerSecurity := config.Diode.Output.TLS
 	serverLocation := fmt.Sprintf("%s:%d", targetServerIP, targetServerPort)
 
 	subBrokerIP := config.MQTT.Inside.Server
@@ -140,7 +143,10 @@ func main() {
 				Usage:   "System benchmark analysis + report performance metrics",
 				Action: func(bCtx *cli.Context) error {
 					fmt.Println("----- BENCHMARKS -----")
-					analysis.Saturate()
+					// analysis.Saturate()
+					input := diodeTransportLayerSecurity
+					output := targetTransportLayerSecurity
+					fmt.Println(">> TLS Status: [", input, "|", output, "]")
 					return nil
 				},
 			},
