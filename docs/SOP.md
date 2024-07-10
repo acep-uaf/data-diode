@@ -7,16 +7,16 @@
 
 ## Research Question
 
-#### State Synchronization
+### State Synchronization
 
-#### System Replication
+### System Replication
 
 ## System Analysis
 
-#### Latency
+### Latency
 
-#### Bandwidth
+### Bandwidth
 
-#### Throughput
+### Throughput
 
 ## Data Integrity

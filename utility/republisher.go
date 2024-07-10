@@ -73,7 +73,7 @@ func OutboundMessageFlow(server string, port int, prefix string, destination str
 			continue
 		}
 
-		// FIXME: Bounds checking for extracted top-level message intent.
+		// TODO: Bounds checking for extracted top-level message intent.
 
 		prepend := prefix + "/" + msg.Topic
 		repackaged := RepackageContents(message, prepend)
