@@ -14,10 +14,10 @@ const (
 )
 
 func min(a, b int) int {
-    if a < b {
-        return a
-    }
-    return b
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func SendMessage(input string, client string) {
