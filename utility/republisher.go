@@ -42,7 +42,6 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 		SendMessage(contents, arrival)
 	}
 
-	// Subscription (Topic)
 	if token := client.Subscribe(topic, 0, handleMessage); token.Wait() && token.Error() != nil {
 		if token.Error() != nil {
 			fmt.Println(">> [!] Error subscribing to the topic: ", token.Error())
@@ -58,7 +57,7 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 func OutboundMessageFlow(server string, port int, prefix string, destination string) {
 	messages := make(chan string)
 	go func() {
-		err := RecieveMessage(destination, messages)
+		err := ReceiveMessage(destination, messages)
 		if err != nil {
 			fmt.Println(err)
 			return

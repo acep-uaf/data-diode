@@ -5,26 +5,36 @@ import (
 	"testing"
 )
 
-func TestRecieveMessage(t *testing.T) {
-	serverMock, err := net.Listen("tcp", "localhost:0")
+func TestSendMessage(t *testing.T) {
+	server, err := net.Listen(CONN_TYPE, "localhost:0")
 	if err != nil {
-		t.Fatalf("[!] Failed to start the mock server: %v", err)
+		t.Fatalf(">> [!] Failed to create mock server: %v", err)
 	}
-	defer serverMock.Close()
+	defer server.Close()
 
-	serverMockAddress := serverMock.Addr().String()
-
-	contents := make(chan string)
 	go func() {
-		err := RecieveMessage(serverMockAddress, contents)
+		conn, err := server.Accept()
 		if err != nil {
-			t.Errorf("[?] Returned an error: %v", err)
+			t.Error(">> [!] Failed to accept connection:", err)
+			return
+		}
+		defer conn.Close()
+
+		buffer := make([]byte, CHUNK_SIZE)
+		_, err = conn.Read(buffer)
+		if err != nil {
+			t.Error("[!] Failed to read data:", err)
+			return
+		}
+
+		_, err = conn.Write([]byte(ACKNOWLEDGEMENT))
+		if err != nil {
+			t.Error("[!] Failed to send acknowledgement:", err)
+			return
 		}
 	}()
 
-	conn, err := net.Dial("tcp", serverMockAddress)
-	if err != nil {
-		t.Fatalf("[!] Failed to connect to the mock server: %v", err)
-	}
-	defer conn.Close()
+	input := "data-diode"
+	client := server.Addr().String()
+	SendMessage(input, client)
 }

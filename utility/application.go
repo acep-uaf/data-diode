@@ -150,7 +150,7 @@ func StartPlaceholderServer(host string, port int) {
 	}
 }
 
-func RecieveMessage(destination string, messages chan<- string) error {
+func ReceiveMessage(destination string, messages chan<- string) error {
 	server, err := net.Listen("tcp", destination)
 	if err != nil {
 		fmt.Println(">> [!] Error connecting to diode: ", err)
