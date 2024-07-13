@@ -1,14 +1,11 @@
 package utility
 
 import (
-	"crypto/md5"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -120,19 +117,6 @@ func RepackageContents(message string, topic string) string {
 	return string(intermediary.Payload)
 }
 
-func EncapsulatePayload(message string) string {
-	encoded := base64.StdEncoding.EncodeToString([]byte(message))
-	return encoded
-}
-
-func UnencapsulatePayload(message string) string {
-	decoded, err := base64.StdEncoding.DecodeString(message)
-	if err != nil {
-		fmt.Println(">> [!] Error decoding the message: ", err)
-	}
-	return string(decoded)
-}
-
 func PublishPayload(server string, port int, topic string, message string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
 	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("out_rec_string")
@@ -145,14 +129,4 @@ func PublishPayload(server string, port int, topic string, message string) {
 	if token := client.Publish(topic, 0, false, message); token.Wait() && token.Error() != nil {
 		fmt.Println(">> [!] Error publishing the message: ", token.Error())
 	}
-}
-
-func MakeTimestamp() int64 {
-	return time.Now().UnixMicro()
-}
-
-func Verification(data string) string {
-	hash := md5.New()
-	hash.Write([]byte(data))
-	return fmt.Sprintf("%x", hash.Sum(nil))
 }

@@ -13,6 +13,7 @@ const (
 	SAMPLE          = 10240
 )
 
+// For versions prior to Go 1.21 (built-ins).
 func min(a, b int) int {
 	if a < b {
 		return a
