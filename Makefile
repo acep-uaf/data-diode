@@ -10,6 +10,9 @@ build:
 test:
 	go test -v ./...
 
+coverage:
+	go test -cover ./...
+
 run: build
 	./${BIN_NAME} --help
 
