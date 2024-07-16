@@ -13,6 +13,7 @@ const (
 	SAMPLE          = 10240
 )
 
+// For versions prior to Go 1.21 (built-ins).
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -150,7 +151,7 @@ func StartPlaceholderServer(host string, port int) {
 	}
 }
 
-func RecieveMessage(destination string, messages chan<- string) error {
+func ReceiveMessage(destination string, messages chan<- string) error {
 	server, err := net.Listen("tcp", destination)
 	if err != nil {
 		fmt.Println(">> [!] Error connecting to diode: ", err)

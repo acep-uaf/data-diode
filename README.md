@@ -6,20 +6,19 @@ Scripts for verifying TCP passthrough functionality.
 
 > [!TIP]
 > This project utilizes [`go`](https://go.dev/) for module management.
-> You can find installation instructions via https://go.dev/doc/install.
+> You can find installation instructions via [relevant operating system](https://go.dev/doc/install) documentation.
 
 - Clone repository: `gh repo clone acep-uaf/data-diode`
 - Source navigation: `cd data-diode`
-- Build binary: `make`
-    - [`build-essential`](https://packages.ubuntu.com/focal/build-essential)
+- Build binary: [`make`](https://www.gnu.org/software/make/)
 - CLI: `./diode [options...]`
 
-#### Branch Management
+### Branch Management
 
 - `main` → production ready environment.
 - `dev` → testing changes to be merged into `main`.
 
-#### Directory Structure
+### Directory Structure
 
 ```zsh
 .
@@ -39,7 +38,7 @@ Scripts for verifying TCP passthrough functionality.
 5 directories, 7 files
 ```
 
-#### Architecture Diagram
+### Architecture Diagram
 
 ```mermaid
 graph LR
@@ -52,23 +51,23 @@ graph LR
 
 ## User Stories
 
-#### Scenario Planning
+### Scenario Planning
 
 1. Power Plant Operator
 1. Information Security Auditor
 1. Energy Awareness Application Developer
 1. Community Member
 
-#### Threat Model[^1]
+### Threat Model[^1]
 
 - [ ] Tactics
 - [ ] Techniques
 - [ ] Procedures
 
-## System Benchmarking
+### System Benchmarking
 
-#### Experimental Design
+### Experimental Design
 
-###### [Device Configuration](docs/SOP.md)
+#### [Device Configuration](docs/SOP.md)
 
-[^1]: https://csrc.nist.gov/glossary/term/tactics_techniques_and_procedures
+[^1]: <https://csrc.nist.gov/glossary/term/tactics_techniques_and_procedures>

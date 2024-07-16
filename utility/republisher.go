@@ -1,14 +1,11 @@
 package utility
 
 import (
-	"crypto/md5"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -42,7 +39,6 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 		SendMessage(contents, arrival)
 	}
 
-	// Subscription (Topic)
 	if token := client.Subscribe(topic, 0, handleMessage); token.Wait() && token.Error() != nil {
 		if token.Error() != nil {
 			fmt.Println(">> [!] Error subscribing to the topic: ", token.Error())
@@ -55,10 +51,10 @@ func InboundMessageFlow(server string, port int, topic string, arrival string) {
 	<-c
 }
 
-func OutboundMessageFlow(server string, port int, topic string, destination string) {
+func OutboundMessageFlow(server string, port int, prefix string, destination string) {
 	messages := make(chan string)
 	go func() {
-		err := RecieveMessage(destination, messages)
+		err := ReceiveMessage(destination, messages)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -66,8 +62,23 @@ func OutboundMessageFlow(server string, port int, topic string, destination stri
 	}()
 
 	for message := range messages {
-		repackaged := RepackageContents(message, topic)
-		PublishPayload(server, port, topic, repackaged)
+		var msg InputDiodeMessage
+		err := json.Unmarshal([]byte(message), &msg)
+		if err != nil {
+			fmt.Println(">> [!] Error parsing JSON message: ", err)
+			continue
+		}
+
+		// TODO: Bounds checking for extracted top-level message intent.
+
+		if msg.Topic == "" {
+			fmt.Println(">> [!] Error extracting the message topic.")
+			continue
+		}
+
+		prepend := prefix + "/" + msg.Topic
+		repackaged := RepackageContents(message, prepend)
+		PublishPayload(server, port, prepend, repackaged)
 	}
 }
 
@@ -111,19 +122,6 @@ func RepackageContents(message string, topic string) string {
 	return string(intermediary.Payload)
 }
 
-func EncapsulatePayload(message string) string {
-	encoded := base64.StdEncoding.EncodeToString([]byte(message))
-	return encoded
-}
-
-func UnencapsulatePayload(message string) string {
-	decoded, err := base64.StdEncoding.DecodeString(message)
-	if err != nil {
-		fmt.Println(">> [!] Error decoding the message: ", err)
-	}
-	return string(decoded)
-}
-
 func PublishPayload(server string, port int, topic string, message string) {
 	location := fmt.Sprintf("tcp://%s:%d", server, port)
 	opts := mqtt.NewClientOptions().AddBroker(location).SetClientID("out_rec_string")
@@ -136,14 +134,4 @@ func PublishPayload(server string, port int, topic string, message string) {
 	if token := client.Publish(topic, 0, false, message); token.Wait() && token.Error() != nil {
 		fmt.Println(">> [!] Error publishing the message: ", token.Error())
 	}
-}
-
-func MakeTimestamp() int64 {
-	return time.Now().UnixMicro()
-}
-
-func Verification(data string) string {
-	hash := md5.New()
-	hash.Write([]byte(data))
-	return fmt.Sprintf("%x", hash.Sum(nil))
 }
