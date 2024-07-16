@@ -71,6 +71,11 @@ func OutboundMessageFlow(server string, port int, prefix string, destination str
 
 		// TODO: Bounds checking for extracted top-level message intent.
 
+		if msg.Topic == "" {
+			fmt.Println(">> [!] Error extracting the message topic.")
+			continue
+		}
+
 		prepend := prefix + "/" + msg.Topic
 		repackaged := RepackageContents(message, prepend)
 		PublishPayload(server, port, prepend, repackaged)

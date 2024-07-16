@@ -41,3 +41,37 @@ func TestDetectContents(t *testing.T) {
 		}
 	}
 }
+
+func TestRepackageContents(t *testing.T) {
+	testcases := []struct {
+		input  string
+		topic  string
+		output string
+	}{
+		{"{\"time\": 1234567890123456, \"topic\": \"test-topic\", \"b64payload\": \"ZGF0YS1kaW9kZQ==\"}", "test-topic", "data-diode"},
+	}
+
+	for _, test := range testcases {
+		actual := RepackageContents(test.input, test.topic)
+		expected := test.output
+
+		if actual != expected {
+			t.Errorf("Expected %s but got %s", expected, actual)
+		}
+	}
+}
+
+func TestPublishPayload(t *testing.T) {
+	testcases := []struct {
+		server  string
+		port    int
+		topic   string
+		message string
+	}{
+		{"localhost", 1883, "test-topic", "data-diode"},
+	}
+
+	for _, test := range testcases {
+		PublishPayload(test.server, test.port, test.topic, test.message)
+	}
+}
