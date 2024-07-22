@@ -6,7 +6,7 @@ diode:
     timeout: 60 # seconds
   output:
     ip: "localhost"
-    port: 13337
+    port: 49152
     tls: false
 mqtt:
   inside:
