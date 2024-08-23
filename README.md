@@ -68,6 +68,8 @@ graph LR
 
 ### Experimental Design
 
+> Research Question: Can you replicate an OT (private) system state published via the MQTT protocol to an IT (public) environment through a data diode?
+
 #### [Device Configuration](docs/SOP.md)
 
 [^1]: <https://csrc.nist.gov/glossary/term/tactics_techniques_and_procedures>
